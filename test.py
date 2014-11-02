@@ -16,9 +16,15 @@ class TestSearch(unittest.TestCase):
         self.assertTrue(soup.find_all(text="0 beers"))
 
     def test_search(self):
-    	results = RateBeer().search("summit extra pale ale")
+    	results = RateBeer().search("deschutes inversion")
     	self.assertListEqual(results['breweries'],[])
     	self.assertIsNotNone(results['beers'])
+    	self.assertEqual(results['beers'][0],{
+    		'url': u'/beer/deschutes-inversion-ipa/55610/', 
+    		'rating': u'94', 
+    		'name': u'Deschutes Inversion IPA', 
+    		'num_ratings': u'1151', 
+    		'id': u'55610'})
 
     def test_beer_404(self):
     	results = RateBeer().beer("/beer/sdfasdf")

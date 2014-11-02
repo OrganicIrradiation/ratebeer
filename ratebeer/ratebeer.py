@@ -35,6 +35,7 @@ class RateBeer():
                 output['breweries'].append({
                     "name":row.a.contents,
                     "url":row.a.get('href'),
+                    "id":re.search("/(?P<id>\d*)/",row.a.get('href')).group('id'),
                     "location":location.contents[0].strip(),
                 })
         # find beer information
