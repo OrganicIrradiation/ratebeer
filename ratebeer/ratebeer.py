@@ -1,6 +1,5 @@
 from bs4 import BeautifulSoup
 import requests
-from pprint import pprint
 
 class RateBeer():
     def __init__(self):
@@ -27,17 +26,17 @@ class RateBeer():
                     "location":location.contents[0].strip()
                 })
         # find beer information
-        if any("beers" in s for s in soup.find_all("h1")):
+        if any("beers" in s for s in soup.find_all("h1")) or not soup.find_all(text="0 beers"):
             s_beers = iter(s_results[1].find_all('tr'))
             next(s_beers)
             for row in s_beers: 
                 link = row.find('td','results').a
                 align_right = row.find_all("td",{'align':'right'})
                 output['beers'].append({
-                    "name":link.contents,
-                    "url":link.get('href'),
-                    "rating":align_right[-2],
-                    "num_ratings":align_right[-1]
+                        "name":link.contents,
+                        "url":link.get('href'),
+                        "rating":align_right[-2],
+                        "num_ratings":align_right[-1]
                     })
         return output
 
