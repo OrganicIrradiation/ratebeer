@@ -25,5 +25,4 @@ setup(name="ratebeer",
                    'Topic :: Internet',
                    'Topic :: Internet :: WWW/HTTP',
                   ],
-      test_suite="test.py",
-      tests_require=["mock", "Mock"])
+      test_suite="test.py",)

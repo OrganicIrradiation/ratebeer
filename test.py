@@ -20,5 +20,14 @@ class TestSearch(unittest.TestCase):
     	self.assertListEqual(results['breweries'],[])
     	self.assertIsNotNone(results['beers'])
 
+    def test_beer_404(self):
+    	results = RateBeer().beer("/beer/sdfasdf")
+    	self.assertIsNone(results)
+
+    def test_beer(self):
+    	results = RateBeer().beer("/beer/deschutes-inversion-ipa/55610/")
+    	self.assertIsNotNone(results)
+    	self.assertListEqual(results,[])
+
 if __name__ == '__main__':
     unittest.main()

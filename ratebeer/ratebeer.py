@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
 import requests
+import re
 
 class RateBeer():
     """
@@ -34,7 +35,7 @@ class RateBeer():
                 output['breweries'].append({
                     "name":row.a.contents,
                     "url":row.a.get('href'),
-                    "location":location.contents[0].strip()
+                    "location":location.contents[0].strip(),
                 })
         # find beer information
         if any("beers" in s for s in soup.find_all("h1")) or not soup.find_all(text="0 beers"):
@@ -44,18 +45,31 @@ class RateBeer():
                 link = row.find('td','results').a
                 align_right = row.find_all("td",{'align':'right'})
                 output['beers'].append({
-                        "name":link.contents,
+                        "name":link.contents[0],
                         "url":link.get('href'),
-                        "rating":align_right[-2],
-                        "num_ratings":align_right[-1]
+                        "id":re.search("/(?P<id>\d*)/",link.get('href')).group('id'),
+                        "rating":align_right[-2].contents[0].strip(),
+                        "num_ratings":align_right[-1].contents[0],
                     })
         return output
 
     def search(self, query):
         return self._parse(self._search(query))
 
-    def beer(self, name):
+    def beer(self,url):
+        r = requests.get(self.BASE_URL+url)
+        soup = BeautifulSoup(r.text)
+        # check for 404s
+        # which don't actually 404, they just send you to this weird "beer reference" page
+        # but the url doesn't actually change, it just seems like it's all getting done
+        # server side -- so we have to look for the contents h1 to see if we're looking at the
+        # beer reference or not
+        if "beer reference" in soup.find('div',id='container').find('table').tr.find_all('td')[1].h1.contents:
+            return None
+
+        return []
+
+    def brewery(self,url):
         pass
 
-    def brewery(self, name):
-        pass
+
