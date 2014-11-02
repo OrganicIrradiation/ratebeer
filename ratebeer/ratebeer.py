@@ -2,17 +2,24 @@ from bs4 import BeautifulSoup
 import requests
 
 class RateBeer():
+    """
+    Makes getting information about beers and breweries from RateBeer.com as easy as
+
+    >>> summit_epa = RateBeer().beer("summit extra pale ale")
+
+    Includes utilities for searching the RateBeers site, and will return information
+    """
     def __init__(self):
         self.BASE_URL = "http://www.ratebeer.com"
 
-    def search(self, query):
+    def _search(self, query):
         # this feels bad to me
         # but if it fits, i sits
         payload = {"BeerName": query}
         r = requests.post(self.BASE_URL+"/findbeer.asp", data = payload)
         return BeautifulSoup(r.text)
 
-    def parse(self, soup):
+    def _parse(self, soup):
         s_results = soup.find_all('table',{'class':'results'})
         output = {"breweries":[],"beers":[]}
         beer_location = 0
@@ -41,6 +48,9 @@ class RateBeer():
                         "num_ratings":align_right[-1]
                     })
         return output
+
+    def search(self, query):
+        return self._parse(self._search(query))
 
     def beer(self, name):
         pass
