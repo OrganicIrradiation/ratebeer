@@ -1,5 +1,6 @@
 import unittest
 from bs4 import BeautifulSoup
+
 from ratebeer import RateBeer
 
 class TestSearch(unittest.TestCase):
@@ -16,24 +17,29 @@ class TestSearch(unittest.TestCase):
         self.assertTrue(soup.find_all(text="0 beers"))
 
     def test_search(self):
-    	results = RateBeer().search("deschutes inversion")
-    	self.assertListEqual(results['breweries'],[])
-    	self.assertIsNotNone(results['beers'])
-    	self.assertEqual(results['beers'][0],{
-    		'url': u'/beer/deschutes-inversion-ipa/55610/', 
-    		'rating': u'94', 
-    		'name': u'Deschutes Inversion IPA', 
-    		'num_ratings': u'1151', 
-    		'id': u'55610'})
+        results = RateBeer().search("deschutes inversion")
+        self.assertListEqual(results['breweries'],[])
+        self.assertIsNotNone(results['beers'])
+        self.assertEqual(results['beers'][0],{
+                'url': u'/beer/deschutes-inversion-ipa/55610/', 
+                'rating': u'94', 
+                'name': u'Deschutes Inversion IPA', 
+                'num_ratings': u'1151', 
+                'id': u'55610'
+            })
 
     def test_beer_404(self):
-    	results = RateBeer().beer("/beer/sdfasdf")
-    	self.assertIsNone(results)
+        results = RateBeer().beer("/beer/sdfasdf")
+        self.assertIsNone(results)
 
     def test_beer(self):
-    	results = RateBeer().beer("/beer/deschutes-inversion-ipa/55610/")
-    	self.assertIsNotNone(results)
-    	self.assertListEqual(results,[])
+        results = RateBeer().beer("/beer/new-belgium-tour-de-fall/279122/")
+        self.assertIsNotNone(results)
+        self.assertEqual(results,{
+                'name':u'New Belgium Tour de Fall',
+                'overall_rating':u'80',
+                'style_rating':u'77',
+            })
 
 if __name__ == '__main__':
     unittest.main()

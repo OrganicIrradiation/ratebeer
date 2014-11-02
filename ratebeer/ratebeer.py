@@ -12,6 +12,10 @@ class RateBeer():
     in a friendly, Pythonic way.
 
     """
+
+    class NotFoundError(Exception):
+        pass
+
     def __init__(self):
         self.BASE_URL = "http://www.ratebeer.com"
 
@@ -58,19 +62,27 @@ class RateBeer():
         return self._parse(self._search(query))
 
     def beer(self,url):
-        r = requests.get(self.BASE_URL+url)
+        r = requests.get(self.BASE_URL+url, allow_redirects=True)
         soup = BeautifulSoup(r.text)
         # check for 404s
-        # which don't actually 404, they just send you to this weird "beer reference" page
-        # but the url doesn't actually change, it just seems like it's all getting done
+        try:
+            s_contents = soup.find('div',id='container').find('table').find_all('tr')
+        except AttributeError:
+            raise self.NotFoundError
+        # ratebeer pages don't actually 404, they just send you to this weird "beer reference" 
+        # page but the url doesn't actually change, it just seems like it's all getting done
         # server side -- so we have to look for the contents h1 to see if we're looking at the
         # beer reference or not
-        if "beer reference" in soup.find('div',id='container').find('table').tr.find_all('td')[1].h1.contents:
-            return None
+        if "beer reference" in s_contents[0].find_all('td')[1].h1.contents:
+            raise NotFoundError
 
-        return []
+        meta_info =  s_contents[1].tr.find_all('td')
+        output = {'name':s_contents[0].find_all('td')[1].h1.contents[0],
+            'overall_rating':meta_info[0].find_all('span', attrs={'itemprop':'average'})[0].contents[0],
+            'style_rating':meta_info[0].find_all('div')[2].div.span.contents[0],
+}
+        return output
 
     def brewery(self,url):
         pass
-
 

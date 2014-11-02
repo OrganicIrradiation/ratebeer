@@ -77,9 +77,9 @@ RateBeer().search("summit extra pale ale")
     'breweries': []}
 </code></pre>
 
-* `beer` -- Returns information about that beer. Takes an `id` number.
+* `beer` -- Returns information about that beer. Now if we were using an API, you'd use an `id` of some variety. Unfortunately, scraping makes things a little more challenging, so as a UUID here, we're using the `url` of the beer.
 
-* `brewery` -- Returns information about the brewery. Takes an `id` number.
+* `brewery` -- Returns information about the brewery. Also takes a `url`.
 
 
 Tests
