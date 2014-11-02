@@ -8,6 +8,8 @@ class RateBeer():
     >>> summit_epa = RateBeer().beer("summit extra pale ale")
 
     Includes utilities for searching the RateBeers site, and will return information
+    in a friendly, Pythonic way.
+
     """
     def __init__(self):
         self.BASE_URL = "http://www.ratebeer.com"
