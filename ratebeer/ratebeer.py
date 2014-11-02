@@ -15,9 +15,11 @@ class RateBeer():
     def parse(self, soup):
         s_results = soup.find_all('table',{'class':'results'})
         output = {"breweries":[],"beers":[]}
-        # find the brewery information
+        beer_location = 0
+        # find brewery information
         if any("brewers" in s for s in soup.find_all("h1")):
             s_breweries = s_results[0].find_all('tr')
+            beer_location = 1
             for row in s_breweries:
                 location = row.find('td',{'align':'right'})
                 output['breweries'].append({
@@ -27,7 +29,7 @@ class RateBeer():
                 })
         # find beer information
         if any("beers" in s for s in soup.find_all("h1")) or not soup.find_all(text="0 beers"):
-            s_beers = iter(s_results[1].find_all('tr'))
+            s_beers = iter(s_results[beer_location].find_all('tr'))
             next(s_beers)
             for row in s_beers: 
                 link = row.find('td','results').a
