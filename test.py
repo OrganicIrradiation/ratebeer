@@ -37,12 +37,9 @@ class TestSearch(unittest.TestCase):
         self.assertIsNotNone(results)
         self.assertDictContainsSubset({
                 'name':u'New Belgium Tour de Fall',
-                'overall_rating':u'80',
-                'style_rating':u'77',
                 'brewery':u'New Belgium Brewing Company',
                 'brewery_url':u'/brewers/new-belgium-brewing-company/77/',
                 'style':u'American Pale Ale',
-                'ibu':u'38',
             }, results)
 
 if __name__ == '__main__':
