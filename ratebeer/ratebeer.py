@@ -81,7 +81,7 @@ class RateBeer():
         #TODO: fix meta bullshit
         meta = s_contents_rows[1].find_all('td')[1].div.small.find_all('big')
         meta_adjustment = 0
-        if len(meta) == 4:
+        if len(meta) > 5:
             meta_adjustment = 1
 
         output = {'name':s_contents_rows[0].find_all('td')[1].h1.contents[0],
@@ -91,6 +91,9 @@ class RateBeer():
             'brewery_url':info[1].a.get('href'),
             'style':info[1].div.find_all('a')[1].contents[0],
             'num_ratings':meta[0].text,
+            'ibu':meta[2+meta_adjustment].text,
+            'calories':meta[3+meta_adjustment].text,
+            'abv':meta[4+meta_adjustment].text
         }
 
         s_reviews = soup.find('div',id='container').table.find_all('tr')[1].find_all('td')[1].div.find_all('table')[3]

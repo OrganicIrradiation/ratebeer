@@ -40,6 +40,17 @@ class TestSearch(unittest.TestCase):
                 'brewery':u'New Belgium Brewing Company',
                 'brewery_url':u'/brewers/new-belgium-brewing-company/77/',
                 'style':u'American Pale Ale',
+                'ibu':u'38'
+            }, results)
+
+        results = RateBeer().beer("/beer/deschutes-inversion-ipa/55610/")
+        self.assertIsNotNone(results)
+        self.assertDictContainsSubset({
+                'name':u'Deschutes Inversion IPA',
+                'brewery':u'Deschutes Brewery',
+                'brewery_url':u'/brewers/deschutes-brewery/233/',
+                'style':u'India Pale Ale (IPA)',
+                'ibu':u'80'
             }, results)
 
 if __name__ == '__main__':
