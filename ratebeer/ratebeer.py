@@ -77,8 +77,6 @@ class RateBeer():
             raise LookupError
 
         info = s_contents_rows[1].tr.find_all('td')
-
-        #TODO: fix meta bullshit
         meta = s_contents_rows[1].find_all('td')[1].div.small.find_all('big')
         meta_adjustment = 0
         if len(meta) > 5:

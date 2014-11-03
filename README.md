@@ -23,14 +23,16 @@ RateBeer.com is a database of user-created reviews about beers and breweries. Ho
                 'num_ratings': <td align="right">1</td>,
                 'rating': <td align="right"></td>,
                 'url': u'/beer/4ts-summit-hoppy/258783/'},
-              ]
+               ]
      'breweries': [{'location': u'St. Paul, Minnesota',
                     'name': [u'Summit Brewing Company'],
                     'url': u'/brewers/summit-brewing-company/1233/'},
                    ...
                    {'location': u'Gaithersburg, Maryland',
                     'name': [u'Summit Station Restaurant & Brewery'],
-                    'url': u'/brewers/summit-station-restaurant-brewery/346/'}]}
+                    'url': u'/brewers/summit-station-restaurant-brewery/346/'}
+                   ]
+    }
 
 
 Why not BeerAdvocate.com?
