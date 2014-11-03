@@ -44,7 +44,7 @@ Because they're evil, and they issue takedown notices left and right.
 Requirements
 ------------
 
-Requires [Requests](http://docs.python-requests.org/en/latest/) and [Beautiful Soup](http://www.crummy.com/software/BeautifulSoup/). See `requirements.txt`.
+Requires [Requests](http://docs.python-requests.org/en/latest/) and [Beautiful Soup](http://www.crummy.com/software/BeautifulSoup/) with `lxml`. See `requirements.txt`.
 
 
 Installation
@@ -80,6 +80,19 @@ RateBeer().search("summit extra pale ale")
 </code></pre>
 
 * `beer` -- Returns information about that beer. Now if we were using an API, you'd use an `id` of some variety. Unfortunately, scraping makes things a little more challenging, so as a UUID here, we're using the `url` of the beer.
+<pre><code>
+    >>> rb.beer("/beer/new-belgium-tour-de-fall/279122/")
+    {'abv': u'6%',
+     'brewery': u'New Belgium Brewing Company',
+     'brewery_url': '/brewers/new-belgium-brewing-company/77/',
+     'calories': u'180',
+     'ibu': u'38',
+     'name': u'New Belgium Tour de Fall',
+     'num_ratings': u'209',
+     'overall_rating': u'81',
+     'style': u'American Pale Ale',
+     'style_rating': u'78'}
+ </pre><code>
 
 * `brewery` -- Returns information about the brewery. Also takes a `url`.
 
