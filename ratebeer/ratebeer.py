@@ -61,8 +61,7 @@ class RateBeer():
 
     def beer(self,url):
         r = requests.get(self.BASE_URL+url, allow_redirects=True)
-        cleaned_dom = sub(r"\<\/?strong\>|\<\/?I\>","",r.text) # due to malformed tags
-        soup = BeautifulSoup(cleaned_dom)
+        soup = BeautifulSoup(r.text,"lxml")
 
         # check for 404s
         try:
@@ -94,10 +93,26 @@ class RateBeer():
             'abv':meta[4+meta_adjustment].text
         }
 
-        s_reviews = soup.find('div',id='container').table.find_all('tr')[1].find_all('td')[1].div.find_all('table')[3]
+        # s_reviews = soup.find('div',id='container').table.find_all('tr')[1].find_all('td')[1].div.find_all('table')[3]
 
         return output
 
     def brewery(self,url):
-        pass
+        r = requests.get(self.BASE_URL+url, allow_redirects=True)
+        soup = BeautifulSoup(r.text, "lxml")
+        try:
+            s_contents = soup.find('div',id='container').find('table').find_all('tr')[0].find_all('td')
+        except AttributeError:
+            raise AttributeError
+
+        output = {
+            'name':s_contents[8].h1.text,
+            'type':search("Type: +(?P<type>[^ ]+)",s_contents[8].find_all('span','beerfoot')[1].text).group('type'),
+            'street':s_contents[0].find('span',attrs={'itemprop':'streetAddress'}).text,
+            'city':s_contents[0].find('span',attrs={'itemprop':'addressLocality'}).text,
+            'state':s_contents[0].find('span',attrs={'itemprop':'addressRegion'}).text,
+            'country':s_contents[0].find('span',attrs={'itemprop':'addressCountry'}).text,
+            'postal_code':s_contents[0].find('span',attrs={'itemprop':'postalCode'}).text,
+            }
+        return output
 

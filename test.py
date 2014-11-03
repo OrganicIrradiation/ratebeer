@@ -53,5 +53,14 @@ class TestSearch(unittest.TestCase):
                 'ibu':u'80'
             }, results)
 
+    def test_brewery(self):
+        results = RateBeer().brewery("/brewers/deschutes-brewery/233/")
+        self.assertIsNotNone(results)
+        self.assertDictContainsSubset({
+                'name':u'Deschutes Brewery',
+                'type':u'Microbrewery',
+                'city':u'Bend',
+            }, results)
+
 if __name__ == '__main__':
     unittest.main()
