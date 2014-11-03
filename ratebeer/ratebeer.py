@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 import requests
 from re import search
 from re import sub
+from re import findall
 
 class RateBeer():
     """
@@ -76,10 +77,8 @@ class RateBeer():
             raise LookupError
 
         info = s_contents_rows[1].tr.find_all('td')
-        meta = s_contents_rows[1].find_all('td')[1].div.small.find_all('big')
-        meta_adjustment = 0
-        if len(meta) > 5:
-            meta_adjustment = 1
+        additional_info = findall("RATINGS: *(?P<num_ratings>\d+)|IBU: *(?P<ibu>\d+)|CALORIES: *(?P<calories>\d+)|ABV: *(?P<abv>\d)",
+            s_contents_rows[1].find_all('td')[1].div.small.text)
 
         output = {'name':s_contents_rows[0].find_all('td')[1].h1.contents[0],
             'overall_rating':info[0].find_all('span', attrs={'itemprop':'average'})[0].contents[0],
@@ -87,10 +86,10 @@ class RateBeer():
             'brewery': info[1].a.contents[0],
             'brewery_url':info[1].a.get('href'),
             'style':info[1].div.find_all('a')[1].contents[0],
-            'num_ratings':meta[0].text,
-            'ibu':meta[2+meta_adjustment].text,
-            'calories':meta[3+meta_adjustment].text,
-            'abv':meta[4+meta_adjustment].text
+            'num_ratings':additional_info[0][0],
+            'ibu':additional_info[1][1],
+            'calories':additional_info[2][2],
+            'abv':additional_info[3][3]
         }
 
         # s_reviews = soup.find('div',id='container').table.find_all('tr')[1].find_all('td')[1].div.find_all('table')[3]
