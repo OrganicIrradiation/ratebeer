@@ -92,7 +92,7 @@ RateBeer().search("summit extra pale ale")
      'overall_rating': u'81',
      'style': u'American Pale Ale',
      'style_rating': u'78'}
- </pre><code>
+ </pre></code>
 
 * `brewery` -- Returns information about the brewery. Also takes a `url`.
 
