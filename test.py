@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 
 from ratebeer import RateBeer
 
+
 class TestSearch(unittest.TestCase):
     def test_search_results(self):
         soup = RateBeer()._search("summit")

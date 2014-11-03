@@ -1,8 +1,6 @@
 from bs4 import BeautifulSoup
 import requests
-from re import search
-from re import sub
-from re import findall
+import re
 
 class RateBeer():
     """
@@ -38,7 +36,7 @@ class RateBeer():
                 output['breweries'].append({
                     "name":row.a.contents,
                     "url":row.a.get('href'),
-                    "id":search("/(?P<id>\d*)/",row.a.get('href')).group('id'),
+                    "id":re.search("/(?P<id>\d*)/",row.a.get('href')).group('id'),
                     "location":location.contents[0].strip(),
                 })
         # find beer information
@@ -51,7 +49,7 @@ class RateBeer():
                 output['beers'].append({
                         "name":link.contents[0],
                         "url":link.get('href'),
-                        "id":search("/(?P<id>\d*)/",link.get('href')).group('id'),
+                        "id":re.search("/(?P<id>\d*)/",link.get('href')).group('id'),
                         "rating":align_right[-2].contents[0].strip(),
                         "num_ratings":align_right[-1].contents[0],
                     })
@@ -63,6 +61,7 @@ class RateBeer():
     def beer(self,url):
         r = requests.get(self.BASE_URL+url, allow_redirects=True)
         soup = BeautifulSoup(r.text,"lxml")
+        output = {}
 
         # check for 404s
         try:
@@ -77,20 +76,29 @@ class RateBeer():
             raise LookupError
 
         info = s_contents_rows[1].tr.find_all('td')
-        additional_info = findall("RATINGS: *(?P<num_ratings>\d+)|IBU: *(?P<ibu>\d+)|CALORIES: *(?P<calories>\d+)|ABV: *(?P<abv>\d)",
-            s_contents_rows[1].find_all('td')[1].div.small.text)
+        additional_info = s_contents_rows[1].find_all('td')[1].div.small
+        abbr = additional_info.find_all(["abbr","a"])
+        big = additional_info.find_all("big")
+        if additional_info.find(text=re.compile("SEASONAL")):
+            del big[2]
+        for location, label in enumerate(abbr):
+            key = None
+            if "RATINGS" in label.text:  key = "num_ratings"
+            if "CALORIES" in label.text: key = "calories"
+            if "ABV" in label.text:      key = "abv"
+            if "SEASONAL" in label.text: key = "season"
+            if "IBU" in label.text:      key = "ibu"
+            
+            if key is not None:
+                output[key] = big[location].text
 
-        output = {'name':s_contents_rows[0].find_all('td')[1].h1.contents[0],
+        output.update({'name':s_contents_rows[0].find_all('td')[1].h1.contents[0],
             'overall_rating':info[0].find_all('span', attrs={'itemprop':'average'})[0].contents[0],
             'style_rating':info[0].find_all('div')[2].div.span.contents[0],
             'brewery': info[1].a.contents[0],
             'brewery_url':info[1].a.get('href'),
             'style':info[1].div.find_all('a')[1].contents[0],
-            'num_ratings':additional_info[0][0],
-            'ibu':additional_info[1][1],
-            'calories':additional_info[2][2],
-            'abv':additional_info[3][3]
-        }
+        })
 
         # s_reviews = soup.find('div',id='container').table.find_all('tr')[1].find_all('td')[1].div.find_all('table')[3]
 
@@ -106,7 +114,7 @@ class RateBeer():
 
         output = {
             'name':s_contents[8].h1.text,
-            'type':search("Type: +(?P<type>[^ ]+)",s_contents[8].find_all('span','beerfoot')[1].text).group('type'),
+            'type':re.search("Type: +(?P<type>[^ ]+)",s_contents[8].find_all('span','beerfoot')[1].text).group('type'),
             'street':s_contents[0].find('span',attrs={'itemprop':'streetAddress'}).text,
             'city':s_contents[0].find('span',attrs={'itemprop':'addressLocality'}).text,
             'state':s_contents[0].find('span',attrs={'itemprop':'addressRegion'}).text,
