@@ -29,17 +29,21 @@ class TestSearch(unittest.TestCase):
             })
 
     def test_beer_404(self):
-        results = RateBeer().beer("/beer/sdfasdf")
-        self.assertIsNone(results)
+        self.assertRaises(LookupError,RateBeer().beer,"/beer/sdfasdf")
+        self.assertIsNotNone(RateBeer().beer("/beer/new-belgium-tour-de-fall/279122/"))
 
     def test_beer(self):
         results = RateBeer().beer("/beer/new-belgium-tour-de-fall/279122/")
         self.assertIsNotNone(results)
-        self.assertEqual(results,{
+        self.assertDictContainsSubset({
                 'name':u'New Belgium Tour de Fall',
                 'overall_rating':u'80',
                 'style_rating':u'77',
-            })
+                'brewery':u'New Belgium Brewing Company',
+                'brewery_url':u'/brewers/new-belgium-brewing-company/77/',
+                'style':u'American Pale Ale',
+                'ibu':u'38',
+            }, results)
 
 if __name__ == '__main__':
     unittest.main()

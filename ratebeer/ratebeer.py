@@ -13,9 +13,6 @@ class RateBeer():
 
     """
 
-    class NotFoundError(Exception):
-        pass
-
     def __init__(self):
         self.BASE_URL = "http://www.ratebeer.com"
 
@@ -64,23 +61,31 @@ class RateBeer():
     def beer(self,url):
         r = requests.get(self.BASE_URL+url, allow_redirects=True)
         soup = BeautifulSoup(r.text)
+
         # check for 404s
         try:
-            s_contents = soup.find('div',id='container').find('table').find_all('tr')
+            s_contents_rows = soup.find('div',id='container').find('table').find_all('tr')
         except AttributeError:
-            raise self.NotFoundError
+            raise LookupError
         # ratebeer pages don't actually 404, they just send you to this weird "beer reference" 
         # page but the url doesn't actually change, it just seems like it's all getting done
         # server side -- so we have to look for the contents h1 to see if we're looking at the
         # beer reference or not
-        if "beer reference" in s_contents[0].find_all('td')[1].h1.contents:
-            raise NotFoundError
+        if "beer reference" in s_contents_rows[0].find_all('td')[1].h1.contents:
+            raise LookupError
 
-        meta_info =  s_contents[1].tr.find_all('td')
-        output = {'name':s_contents[0].find_all('td')[1].h1.contents[0],
-            'overall_rating':meta_info[0].find_all('span', attrs={'itemprop':'average'})[0].contents[0],
-            'style_rating':meta_info[0].find_all('div')[2].div.span.contents[0],
-}
+        info = s_contents_rows[1].tr.find_all('td')
+        meta = s_contents_rows[1].find_all('td')[1].div.small.find_all('big') #TODO: figure out why this isn't getting everything
+        output = {'name':s_contents_rows[0].find_all('td')[1].h1.contents[0],
+            'overall_rating':info[0].find_all('span', attrs={'itemprop':'average'})[0].contents[0],
+            'style_rating':info[0].find_all('div')[2].div.span.contents[0],
+            'brewery': info[1].a.contents[0],
+            'brewery_url':info[1].a.get('href'),
+            'style':info[1].div.find_all('a')[1].contents[0],
+            'num_ratings':meta[0].text,
+            'seasonal':meta[2].text,
+            'ibu':meta[3].text,
+        }
         return output
 
     def brewery(self,url):
