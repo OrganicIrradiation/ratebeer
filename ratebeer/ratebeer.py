@@ -41,9 +41,9 @@ class RateBeer():
                 })
         # find beer information
         if any("beers" in s for s in soup.find_all("h1")) or not soup.find_all(text="0 beers"):
-            s_beers = iter(s_results[beer_location].find_all('tr'))
-            next(s_beers)
-            for row in s_beers: 
+            s_beer_trs = iter(s_results[beer_location].find_all('tr'))
+            next(s_beer_trs)
+            for row in s_beer_trs: 
                 link = row.find('td','results').a
                 align_right = row.find_all("td",{'align':'right'})
                 output['beers'].append({
@@ -104,7 +104,7 @@ class RateBeer():
 
         return output
 
-    def brewery(self,url):
+    def brewery(self,url,include_beers=True):
         r = requests.get(self.BASE_URL+url, allow_redirects=True)
         soup = BeautifulSoup(r.text, "lxml")
         try:
@@ -121,5 +121,18 @@ class RateBeer():
             'country':s_contents[0].find('span',attrs={'itemprop':'addressCountry'}).text,
             'postal_code':s_contents[0].find('span',attrs={'itemprop':'postalCode'}).text,
             }
+        if include_beers:
+            output.update({'beers':[]})
+            s_beer_trs = iter(s_contents[8].find('table','maintable nohover').find_all('tr'))
+            next(s_beer_trs)
+            for row in s_beer_trs:
+                beer = {
+                    'name':row.a.text,
+                    'url':row.a.get('href'),
+                    'id':re.search("/(?P<id>\d*)/",row.a.get('href')).group('id'),
+                    'rating':row.find_all('td')[4].text.strip(),
+                    'num_ratings':row.find_all('td')[6].text.strip(),
+                }
+                output['beers'].append(beer)
         return output
 

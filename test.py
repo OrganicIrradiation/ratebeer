@@ -62,6 +62,10 @@ class TestSearch(unittest.TestCase):
                 'type':u'Microbrewery',
                 'city':u'Bend',
             }, results)
+        self.assertDictContainsSubset({
+                'name':u'Deschutes / Hopworks India Red Lager',
+                'url':u'/beer/deschutes--hopworks-india-red-lager/176946/'
+            },results['beers'][1])
 
 if __name__ == '__main__':
     unittest.main()

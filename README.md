@@ -12,7 +12,7 @@ Changes
 What is this?
 -------------
 
-RateBeer.com is a database of user-created reviews about beers and breweries. However, their API has been down for some time, making it difficult to get that information programmatically. This simplifies that process, allow you to access it in the most painless way possible. Data is returned to you in a friendly, Pythonic way:
+[RateBeer](http://www.ratebeer.com/) is a database of user-created reviews about beers and breweries. However, their API has been down for some time, making it difficult to get that information programmatically. This simplifies that process, allow you to access it in the most painless way possible. Data is returned to you in a friendly, Pythonic way:
 
     {'beers': [{'name': [u'21st Amendment Summit IPA'],
                 'num_ratings': <td align="right">4</td>,
@@ -94,8 +94,36 @@ RateBeer().search("summit extra pale ale")
      'style_rating': u'78'}
  </code></pre>
 
-* `brewery` -- Returns information about the brewery. Also takes a `url`.
+* `brewery` -- Returns information about the brewery. Takes a `url`, and can include a flag to disable returning the list of beers from that brewery.
+<pre><code>
+    >>> rb.brewery("/brewers/deschutes-brewery/233/")
+    {'city': u'Bend',
+     'country': u'USA',
+     'name': u'Deschutes Brewery',
+     'postal_code': u'97702',
+     'state': u'Oregon',
+     'street': u'901 SW Simpson Ave',
+     'type': u'Microbrewery',
+     'beers': [{'id': '282308',
+                'name': u'Deschutes (Dry-Hopped) Table Beer',
+                'num_ratings': u'1',
+                'rating': u'',
+                'url': '/beer/deschutes-dry-hopped-table-beer/282308/'},
+                ...
+               {'id': '180887',
+                'name': u'Deschutes Zymerge (Low Gluten Beer)',
+                'num_ratings': u'2',
+                'rating': u'',
+                'url': '/beer/deschutes-zymerge-low-gluten-beer/180887/'}]}
 
+    >>> rb.brewery("/brewers/summit-brewing-company/1233/",include_beers=False)
+    {'city': u'St. Paul',
+     'country': u'USA',
+     'name': u'Summit Brewing Company',
+     'postal_code': u'55102',
+     'state': u'Minnesota',
+     'street': u'910 Montreal Circle',
+     'type': u'Microbrewery'}
 
 Tests
 -----
