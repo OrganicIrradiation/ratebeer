@@ -126,6 +126,7 @@ RateBeer().search("summit extra pale ale")
      'state': u'Minnesota',
      'street': u'910 Montreal Circle',
      'type': u'Microbrewery'}
+</code></pre>
 
 Tests
 -----
