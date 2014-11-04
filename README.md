@@ -4,9 +4,11 @@ ratebeer.py
 Changes
 -------
 
-### v0.1
+Note that the nature of web scraping means this will be in **perpetual beta.**
 
-* This guy right here.
+### v1.0
+
+* Initial release.
 
 
 What is this?
@@ -44,7 +46,7 @@ Because they're evil, and they issue takedown notices left and right.
 Requirements
 ------------
 
-Requires [Requests](http://docs.python-requests.org/en/latest/) and [Beautiful Soup](http://www.crummy.com/software/BeautifulSoup/) with `lxml`. See `requirements.txt`.
+Requires [Requests](http://docs.python-requests.org/en/latest/) and [Beautiful Soup](http://www.crummy.com/software/BeautifulSoup/) with `lxml`.
 
 
 Installation
