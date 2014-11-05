@@ -37,7 +37,7 @@ class RateBeer():
                     "name":row.a.contents,
                     "url":row.a.get('href'),
                     "id":re.search("/(?P<id>\d*)/",row.a.get('href')).group('id'),
-                    "location":location.contents[0].strip(),
+                    "location":location.text.strip(),
                 })
         # find beer information
         if any("beers" in s for s in soup.find_all("h1")) or not soup.find_all(text="0 beers"):
@@ -47,18 +47,18 @@ class RateBeer():
                 link = row.find('td','results').a
                 align_right = row.find_all("td",{'align':'right'})
                 output['beers'].append({
-                        "name":link.contents[0],
+                        "name":link.text,
                         "url":link.get('href'),
                         "id":re.search("/(?P<id>\d*)/",link.get('href')).group('id'),
-                        "rating":align_right[-2].contents[0].strip(),
-                        "num_ratings":align_right[-1].contents[0],
+                        "rating":align_right[-2].text.strip(),
+                        "num_ratings":align_right[-1].text,
                     })
         return output
 
     def search(self, query):
         return self._parse(self._search(query))
 
-    def beer(self,url):
+    def beer(self, url):
         r = requests.get(self.BASE_URL+url, allow_redirects=True)
         soup = BeautifulSoup(r.text,"lxml")
         output = {}
@@ -92,19 +92,17 @@ class RateBeer():
             if key is not None:
                 output[key] = big[location].text
 
-        output.update({'name':s_contents_rows[0].find_all('td')[1].h1.contents[0],
-            'overall_rating':info[0].find_all('span', attrs={'itemprop':'average'})[0].contents[0],
-            'style_rating':info[0].find_all('div')[2].div.span.contents[0],
-            'brewery': info[1].a.contents[0],
+        output.update({'name':s_contents_rows[0].find_all('td')[1].h1.text,
+            'overall_rating':info[0].find_all('span', attrs={'itemprop':'average'})[0].text,
+            'style_rating':info[0].find_all('div')[2].div.span.text,
+            'brewery': info[1].a.text,
             'brewery_url':info[1].a.get('href'),
-            'style':info[1].div.find_all('a')[1].contents[0],
+            'style':info[1].div.find_all('a')[1].text,
         })
-
-        # s_reviews = soup.find('div',id='container').table.find_all('tr')[1].find_all('td')[1].div.find_all('table')[3]
-
         return output
 
-    def brewery(self,url,include_beers=True):
+
+    def brewery(self, url, include_beers=True):
         r = requests.get(self.BASE_URL+url, allow_redirects=True)
         soup = BeautifulSoup(r.text, "lxml")
         try:
