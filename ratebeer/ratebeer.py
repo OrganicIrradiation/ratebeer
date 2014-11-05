@@ -15,6 +15,9 @@ class RateBeer():
 
     """
 
+    class PageNotFound(Exception):
+        pass
+
     def __init__(self):
         self.BASE_URL = "http://www.ratebeer.com"
 
@@ -69,13 +72,13 @@ class RateBeer():
         try:
             s_contents_rows = soup.find('div',id='container').find('table').find_all('tr')
         except AttributeError:
-            raise PageNotFound
+            raise RateBeer.PageNotFound(url)
         # ratebeer pages don't actually 404, they just send you to this weird "beer reference" 
         # page but the url doesn't actually change, it just seems like it's all getting done
         # server side -- so we have to look for the contents h1 to see if we're looking at the
         # beer reference or not
         if "beer reference" in s_contents_rows[0].find_all('td')[1].h1.contents:
-            raise PageNotFound
+            raise RateBeer.PageNotFound(url)
 
         info = s_contents_rows[1].tr.find_all('td')
         additional_info = s_contents_rows[1].find_all('td')[1].div.small
@@ -124,7 +127,7 @@ class RateBeer():
         try:
             s_contents = soup.find('div',id='container').find('table').find_all('tr')[0].find_all('td')
         except AttributeError:
-            raise PageNotFound
+            raise RateBeer.PageNotFound(url)
 
         output = {
             'name':s_contents[8].h1.text,
@@ -149,6 +152,3 @@ class RateBeer():
                 }
                 output['beers'].append(beer)
         return output
-
-class PageNotFound(Exception):
-    pass

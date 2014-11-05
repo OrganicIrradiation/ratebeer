@@ -3,7 +3,6 @@ from bs4 import BeautifulSoup
 
 from ratebeer import RateBeer
 
-
 class TestSearch(unittest.TestCase):
     def test_search_results(self):
         soup = RateBeer()._search("summit")
@@ -30,8 +29,9 @@ class TestSearch(unittest.TestCase):
             })
 
     def test_beer_404(self):
-        self.assertRaises(LookupError,RateBeer().beer,"/beer/sdfasdf")
-        self.assertIsNotNone(RateBeer().beer("/beer/new-belgium-tour-de-fall/279122/"))
+        rb = RateBeer()
+        self.assertRaises(rb.PageNotFound,rb.beer,"/beer/sdfasdf")
+        self.assertIsNotNone(rb.beer("/beer/new-belgium-tour-de-fall/279122/"))
 
     def test_beer(self):
         results = RateBeer().beer("/beer/new-belgium-tour-de-fall/279122/")
