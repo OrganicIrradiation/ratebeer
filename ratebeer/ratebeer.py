@@ -21,7 +21,7 @@ class RateBeer():
         # but if it fits, i sits
         payload = {"BeerName": query}
         r = requests.post(self.BASE_URL+"/findbeer.asp", data = payload)
-        return BeautifulSoup(r.text)
+        return BeautifulSoup(r.text, "lxml")
 
     def _parse(self, soup):
         s_results = soup.find_all('table',{'class':'results'})
@@ -100,6 +100,21 @@ class RateBeer():
             'style':info[1].div.find_all('a')[1].text,
         })
         return output
+
+    def reviews(self, url, pages=1,start_page=1,type="most recent"):
+        assert pages > 0, "``pages`` must be greater than 0"
+        assert start_page > 0, "``start_page`` must be greater than 0"
+
+        type = type.lower()
+        url_codes = {
+            "most recent":1,
+            "top raters":2,
+            "highest score":3
+            }
+        url_flag = url_codes.get(type)
+        if not url_flag: raise ValueError, "Invalid search type."
+        r = requests.get("{0}{1}/{2}/{3]/".format(self.BASE_URL, url, url_flag, start_page), allow_redirects=True)
+        soup = BeautifulSoup(r.text, "lxml")
 
 
     def brewery(self, url, include_beers=True):
