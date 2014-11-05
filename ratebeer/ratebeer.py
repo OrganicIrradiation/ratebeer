@@ -2,6 +2,8 @@ from bs4 import BeautifulSoup
 import requests
 import re
 
+import exceptions
+
 class RateBeer():
     """
     Makes getting information about beers and breweries from RateBeer.com as easy as
@@ -67,13 +69,13 @@ class RateBeer():
         try:
             s_contents_rows = soup.find('div',id='container').find('table').find_all('tr')
         except AttributeError:
-            raise LookupError
+            raise PageNotFound
         # ratebeer pages don't actually 404, they just send you to this weird "beer reference" 
         # page but the url doesn't actually change, it just seems like it's all getting done
         # server side -- so we have to look for the contents h1 to see if we're looking at the
         # beer reference or not
         if "beer reference" in s_contents_rows[0].find_all('td')[1].h1.contents:
-            raise LookupError
+            raise PageNotFound
 
         info = s_contents_rows[1].tr.find_all('td')
         additional_info = s_contents_rows[1].find_all('td')[1].div.small
@@ -101,19 +103,18 @@ class RateBeer():
         })
         return output
 
-    def reviews(self, url, pages=1,start_page=1,type="most recent"):
+    def reviews(self, url, pages=1,start_page=1,review_order="most recent"):
         assert pages > 0, "``pages`` must be greater than 0"
         assert start_page > 0, "``start_page`` must be greater than 0"
-
-        type = type.lower()
+        review_order = review_order.lower()
         url_codes = {
             "most recent":1,
             "top raters":2,
             "highest score":3
             }
-        url_flag = url_codes.get(type)
-        if not url_flag: raise ValueError, "Invalid search type."
-        r = requests.get("{0}{1}/{2}/{3]/".format(self.BASE_URL, url, url_flag, start_page), allow_redirects=True)
+        url_flag = url_codes.get(review_order)
+        if not url_flag: raise ValueError, "Invalid review_order."
+        r = requests.get("{0}{1}/{2}/{3}/".format(self.BASE_URL, url, url_flag, start_page), allow_redirects=True)
         soup = BeautifulSoup(r.text, "lxml")
 
 
@@ -123,7 +124,7 @@ class RateBeer():
         try:
             s_contents = soup.find('div',id='container').find('table').find_all('tr')[0].find_all('td')
         except AttributeError:
-            raise AttributeError
+            raise PageNotFound
 
         output = {
             'name':s_contents[8].h1.text,
@@ -149,3 +150,5 @@ class RateBeer():
                 output['beers'].append(beer)
         return output
 
+class PageNotFound(Exception):
+    pass
