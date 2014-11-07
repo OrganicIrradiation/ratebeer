@@ -67,5 +67,15 @@ class TestSearch(unittest.TestCase):
                 'url':u'/beer/deschutes--hopworks-india-red-lager/176946/'
             },results['beers'][1])
 
+    def test_reviews(self):
+        reviews = RateBeer().reviews("/beer/deschutes-inversion-ipa/55610/")
+        self.assertIsNotNone(reviews)
+        self.assertEqual(len(reviews),10)
+
+        reviews = RateBeer().reviews("/beer/deschutes-inversion-ipa/55610/",pages=2)
+        self.assertIsNotNone(reviews)
+        self.assertEqual(len(reviews),20)
+        self.assertNotEqual(reviews[0]['text'],reviews[-1]['text'])
+
 if __name__ == '__main__':
     unittest.main()

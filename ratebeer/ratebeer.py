@@ -116,9 +116,25 @@ class RateBeer():
             "highest score":3
             }
         url_flag = url_codes.get(review_order)
-        if not url_flag: raise ValueError, "Invalid review_order."
-        r = requests.get("{0}{1}/{2}/{3}/".format(self.BASE_URL, url, url_flag, start_page), allow_redirects=True)
-        soup = BeautifulSoup(r.text, "lxml")
+        if not url_flag: raise ValueError, "Invalid ``review_order``."
+
+        output = []
+        for page_number in range(start_page,start_page+pages):
+            complete_url = "{0}{1}{2}/{3}/".format(self.BASE_URL, url, url_flag, page_number)
+            r = requests.get(complete_url, allow_redirects=True)
+            soup = BeautifulSoup(r.text, "lxml")
+            content = soup.find('div',id='container').find('table').find_all('tr')[5]
+            [x.extract() for x in content.find_all('table')] # strip ad section
+            review_tuples = zip(*[iter(content.find_all('div'))] * 4) # basically magic
+            for review in review_tuples:
+                detail_tuples = zip(*[iter(review[0].find_all(["big","small"]))] * 2)
+                details = dict([(
+                        label.text.lower().strip().encode("ascii","ignore"), 
+                        rating.text,
+                    ) for (label, rating) in detail_tuples])
+                details.update({'text':review[3].text})
+                output.append(details)
+        return output
 
 
     def brewery(self, url, include_beers=True):

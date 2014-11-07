@@ -6,6 +6,12 @@ Changes
 
 Note that the nature of web scraping means this will be in **perpetual beta.**
 
+###v1.1
+
+* Added ``reviews``.
+* Better exceptions (no more ``LookupError`` for 404s)
+
+
 ### v1.0
 
 * Initial release.
