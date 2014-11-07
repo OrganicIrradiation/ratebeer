@@ -149,9 +149,10 @@ RateBeer().search("summit extra pale ale")
       'palate': u'3/5',
       'taste': u'7/10',
       'text': u'Tasted from bottle. Pours a nice copper color with tan head. Good lacing. Aroma of floral notes, caramel and some toasted malt. Taste is pretty well balanced and sweeter than most IPAs. Caramel, toffee, brown auger malt backbone give it moderate sweetness with some pine and floral flavors giving it a clean consistent moderate bitterness. Above average IPA. \n\n---Rated via Beer Buddy for iPhone '}]
-
-      >>> rb.reviews("/beer/deschutes-inversion-ipa/55610/", start_page=2, pages=10)
-      [{'appearance': u'4/5',
+</code></pre>
+<pre><code>
+    >>> rb.reviews("/beer/deschutes-inversion-ipa/55610/", start_page=2, pages=10)
+    [{'appearance': u'4/5',
       'aroma': u'7/10',
       'overall': u'15/20',
       'palate': u'4/5',
