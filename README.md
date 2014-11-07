@@ -11,7 +11,6 @@ Note that the nature of web scraping means this will be in **perpetual beta.**
 * Added ``reviews``.
 * Better exceptions (no more ``LookupError`` for 404s)
 
-
 ### v1.0
 
 * Initial release.
@@ -132,6 +131,39 @@ RateBeer().search("summit extra pale ale")
      'state': u'Minnesota',
      'street': u'910 Montreal Circle',
      'type': u'Microbrewery'}
+</code></pre>
+
+* `reviews` -- Returns a list of dictionaries containing reviews. Requires a `url`, can also take `start_page`, `pages`, or `review_order` ("most recent", "top raters", "highest score"):
+<pre><code>
+    >>> rb.reviews("/beer/deschutes-inversion-ipa/55610/")
+    [{'appearance': u'4/5',
+      'aroma': u'7/10',
+      'overall': u'15/20',
+      'palate': u'3/5',
+      'taste': u'8/10',
+      'text': u'Pours copper with a thick off white head that leaves nice lacing in the glass. Aroma is malt and grapefruit. Has medium carbonation the mouth with a bit of a bitter kick on the back end. Good grapefruit bitterness and a tad sweet and malty. This a nice IPA. '},
+      ...
+     {'appearance': u'4/5',
+      'aroma': u'7/10',
+      'overall': u'15/20',
+      'palate': u'3/5',
+      'taste': u'7/10',
+      'text': u'Tasted from bottle. Pours a nice copper color with tan head. Good lacing. Aroma of floral notes, caramel and some toasted malt. Taste is pretty well balanced and sweeter than most IPAs. Caramel, toffee, brown auger malt backbone give it moderate sweetness with some pine and floral flavors giving it a clean consistent moderate bitterness. Above average IPA. \n\n---Rated via Beer Buddy for iPhone '}]
+
+      >>> rb.reviews("/beer/deschutes-inversion-ipa/55610/", start_page=2, pages=10)
+      [{'appearance': u'4/5',
+      'aroma': u'7/10',
+      'overall': u'15/20',
+      'palate': u'4/5',
+      'taste': u'6/10',
+      'text': u'Pours a brownish amber color with a nice off-white 1 finger head. Aroma of Citrus, pine, caramel, and malt. Orange flavor up front with a nice bitter sweetness, bit of caramel and grapefruit. '},
+     ...
+     {'appearance': u'5/5',
+      'aroma': u'7/10',
+      'overall': u'14/20',
+      'palate': u'4/5',
+      'taste': u'7/10',
+      'text': u'Bottle pour at the Deschutes tasting. Pours a clear amber with a beige head of foam. The aroma is citrussy ang grassy. Taste is fairly bitter with complex layers of tea, earth, citrus, and herbs coming across in waves of bitterness. Medium bodied with medium carbonation. Decent IPA. '}]
 </code></pre>
 
 Tests
