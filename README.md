@@ -76,6 +76,7 @@ RateBeer().search("summit extra pale ale")
 ```
 ### Methods
 * `search` -- A generic search. A dictionary with two keys: `beers` and `breweries`. Each of those contains a list of dictionaries.
+
 <pre><code>
     >>> rb = RateBeer()
     >>> rb.search("summit extra pale ale")
@@ -87,6 +88,7 @@ RateBeer().search("summit extra pale ale")
 </code></pre>
 
 * `beer` -- Returns information about that beer. Now if we were using an API, you'd use an `id` of some variety. Unfortunately, scraping makes things a little more challenging, so as a UUID here, we're using the `url` of the beer.
+
 <pre><code>
     >>> rb.beer("/beer/new-belgium-tour-de-fall/279122/")
     {'abv': u'6%',
@@ -102,6 +104,7 @@ RateBeer().search("summit extra pale ale")
  </code></pre>
 
 * `brewery` -- Returns information about the brewery. Takes a `url`, and can include a flag to disable returning the list of beers from that brewery.
+
 <pre><code>
     >>> rb.brewery("/brewers/deschutes-brewery/233/")
     {'city': u'Bend',
@@ -134,6 +137,7 @@ RateBeer().search("summit extra pale ale")
 </code></pre>
 
 * `reviews` -- Returns a list of dictionaries containing reviews. Requires a `url`, can also take `start_page`, `pages`, or `review_order` ("most recent", "top raters", "highest score"):
+
 <pre><code>
     >>> rb.reviews("/beer/deschutes-inversion-ipa/55610/")
     [{'appearance': u'4/5',
@@ -150,6 +154,7 @@ RateBeer().search("summit extra pale ale")
       'taste': u'7/10',
       'text': u'Tasted from bottle. Pours a nice copper color with tan head. Good lacing. Aroma of floral notes, caramel and some toasted malt. Taste is pretty well balanced and sweeter than most IPAs. Caramel, toffee, brown auger malt backbone give it moderate sweetness with some pine and floral flavors giving it a clean consistent moderate bitterness. Above average IPA. \n\n---Rated via Beer Buddy for iPhone '}]
 </code></pre>
+
 <pre><code>
     >>> rb.reviews("/beer/deschutes-inversion-ipa/55610/", start_page=2, pages=10)
     [{'appearance': u'4/5',
