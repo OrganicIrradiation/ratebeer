@@ -19,7 +19,7 @@ Note that the nature of web scraping means this will be in **perpetual beta.**
 What is this?
 -------------
 
-[RateBeer](http://www.ratebeer.com/) is a database of user-created reviews about beers and breweries. However, their API has been down for some time, making it difficult to get that information programmatically. This simplifies that process, allow you to access it in the most painless way possible. Data is returned to you in a friendly, Pythonic way:
+[RateBeer](http://www.ratebeer.com/) is a database of user-created reviews about beers and breweries. However, their API has been down for some time, making it difficult to get that information programmatically. This simplifies that process, allowing you to access it in the most painless way possible. Data is returned to you in a friendly, Pythonic way:
 
     {'beers': [{'id': '61118',
             'name': u'21st Amendment Summit IPA',
