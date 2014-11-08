@@ -21,25 +21,34 @@ What is this?
 
 [RateBeer](http://www.ratebeer.com/) is a database of user-created reviews about beers and breweries. However, their API has been down for some time, making it difficult to get that information programmatically. This simplifies that process, allow you to access it in the most painless way possible. Data is returned to you in a friendly, Pythonic way:
 
-    {'beers': [{'name': [u'21st Amendment Summit IPA'],
-                'num_ratings': <td align="right">4</td>,
-                'rating': <td align="right"></td>,
-                'url': u'/beer/21st-amendment-summit-ipa/61118/'},
-                ...
-               {'name': [u'4T\x92s Summit Hoppy'],
-                'num_ratings': <td align="right">1</td>,
-                'rating': <td align="right"></td>,
-                'url': u'/beer/4ts-summit-hoppy/258783/'},
-               ]
-     'breweries': [{'location': u'St. Paul, Minnesota',
-                    'name': [u'Summit Brewing Company'],
-                    'url': u'/brewers/summit-brewing-company/1233/'},
-                   ...
-                   {'location': u'Gaithersburg, Maryland',
-                    'name': [u'Summit Station Restaurant & Brewery'],
-                    'url': u'/brewers/summit-station-restaurant-brewery/346/'}
-                   ]
-    }
+    {'beers': [{'id': '61118',
+            'name': u'21st Amendment Summit IPA',
+            'num_ratings': u'4',
+            'rating': u'',
+            'url': '/beer/21st-amendment-summit-ipa/61118/'},
+             {'id': '258783',
+              'name': u'4T\x92s Summit Hoppy',
+              'num_ratings': u'1',
+              'rating': u'',
+              'url': '/beer/4ts-summit-hoppy/258783/'},
+             ....
+             {'id': '170187',
+              'name': u'Maumee Bay Summit Street Pale Ale',
+              'num_ratings': u'3',
+              'rating': u'',
+              'url': '/beer/maumee-bay-summit-street-pale-ale/170187/'
+            }],
+      'breweries': [{'id': '1233',
+                'location': u'St. Paul, Minnesota',
+                'name': [u'Summit Brewing Company'],
+                'url': '/brewers/summit-brewing-company/1233/'},
+               ...
+               {'id': '346',
+                'location': u'Gaithersburg, Maryland',
+                'name': [u'Summit Station Restaurant & Brewery'],
+                'url': '/brewers/summit-station-restaurant-brewery/346/'}
+              ]
+      }
 
 
 Why not BeerAdvocate.com?
