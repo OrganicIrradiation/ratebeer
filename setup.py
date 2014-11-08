@@ -8,7 +8,7 @@ except ImportError:
 import ratebeer
 
 setup(name="ratebeer",
-      version="1.1",
+      version="1.1.1",
       description="RateBeer.com data scraper.",
       long_description=ratebeer.RateBeer.__doc__,
       keywords="ratebeer rate beer ratings",

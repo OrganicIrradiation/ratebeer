@@ -6,12 +6,17 @@ import exceptions
 
 class RateBeer():
     """
-    Makes getting information about beers and breweries from RateBeer.com as easy as
+    Makes getting information about beers and breweries from RateBeer.com as easy as:
 
     >>> summit_epa = RateBeer().beer("summit extra pale ale")
 
-    Includes utilities for searching the RateBeers site, and will return information
-    in a friendly, Pythonic way.
+    A utility for searching RateBeer.com, finding information about beers, breweries, and reviews.
+
+    The nature of web scraping means that this package is offered in perpetual beta.
+
+    Requires BeautifulSoup, Requests, and lxml.
+
+    See https://github.com/alilja/ratebeer for the full README.
 
     """
 
