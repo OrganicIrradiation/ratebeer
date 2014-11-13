@@ -20,13 +20,11 @@ class TestSearch(unittest.TestCase):
         results = RateBeer().search("deschutes inversion")
         self.assertListEqual(results['breweries'],[])
         self.assertIsNotNone(results['beers'])
-        self.assertEqual(results['beers'][0],{
-                'url': u'/beer/deschutes-inversion-ipa/55610/', 
-                'rating': u'94', 
+        self.assertDictContainsSubset({
+                'url': '/beer/deschutes-inversion-ipa/55610/', 
                 'name': u'Deschutes Inversion IPA', 
-                'num_ratings': u'1151', 
-                'id': u'55610'
-            })
+                'id': '55610'
+            },results['beers'][0])
 
     def test_beer_404(self):
         rb = RateBeer()
