@@ -6,6 +6,11 @@ Changes
 
 Note that the nature of web scraping means this will be in **perpetual beta.**
 
+###v1.2
+
+* Everything conforms to PEP8 now. Thanks to the fine folks [here](http://codereview.stackexchange.com/questions/69909/ratebeer-com-scraper).
+* Minor refactoring.
+
 ###v1.1
 
 * Added ``reviews``.
