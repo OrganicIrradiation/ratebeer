@@ -18,13 +18,13 @@ class RateBeer(object):
     for the full README.
 
     """
-    BASE_URL = "http://www.ratebeer.com"
+    _BASE_URL = "http://www.ratebeer.com"
 
     class PageNotFound(Exception):
         pass
 
     def _get_soup(self, url):
-        req = requests.get(self.BASE_URL + url, allow_redirects=True)
+        req = requests.get(RateBeer._BASE_URL + url, allow_redirects=True)
         return BeautifulSoup(req.text, "lxml")
 
     def search(self, query):
@@ -37,7 +37,7 @@ class RateBeer(object):
             A dictionary containing two lists, ``breweries`` and ``beers``. Each list
             contains a dictionary of attributes of that brewery or beer.
         """
-        r = requests.post(self.BASE_URL + "/findbeer.asp", data={"BeerName": query})
+        r = requests.post(RateBeer._BASE_URL + "/findbeer.asp", data={"BeerName": query})
         soup = BeautifulSoup(r.text, "lxml")
         s_results = soup.find_all('table', {'class': 'results'})
         output = {"breweries": [], "beers": []}
@@ -195,11 +195,11 @@ class RateBeer(object):
             'name': s_contents[8].h1.text,
             'type': re.search(r"Type: +(?P<type>[^ ]+)",
                               s_contents[8].find_all('span', 'beerfoot')[1].text).group('type'),
-            'street': self._find_span(s_contents[0], 'streetAddress').text,
-            'city': self._find_span(s_contents[0], 'addressLocality').text,
-            'state': self._find_span(s_contents[0], 'addressRegion').text,
-            'country': self._find_span(s_contents[0], 'addressCountry').text,
-            'postal_code': self._find_span(s_contents[0], 'postalCode').text,
+            'street': _find_span(s_contents[0], 'streetAddress').text,
+            'city': _find_span(s_contents[0], 'addressLocality').text,
+            'state': _find_span(s_contents[0], 'addressRegion').text,
+            'country': _find_span(s_contents[0], 'addressCountry').text,
+            'postal_code': _find_span(s_contents[0], 'postalCode').text,
         }
 
         if include_beers:
