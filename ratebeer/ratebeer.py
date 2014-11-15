@@ -44,6 +44,7 @@ class RateBeer(object):
         s_results = soup.find_all('table', {'class': 'results'})
         output = {"breweries": [], "beers": []}
         beer_location = 0
+        
         # find brewery information
         if any("brewers" in s for s in soup.find_all("h1")):
             s_breweries = s_results[0].find_all('tr')
@@ -56,6 +57,7 @@ class RateBeer(object):
                     "id": re.search(r"/(?P<id>\d*)/", row.a.get('href')).group('id'),
                     "location": location.text.strip(),
                 })
+
         # find beer information
         if any("beers" in s for s in soup.find_all("h1")) or not soup.find_all(text="0 beers"):
             s_beer_trs = iter(s_results[beer_location].find_all('tr'))
@@ -102,6 +104,7 @@ class RateBeer(object):
         big = additional_info.find_all("big")
         if additional_info.find(text=re.compile("SEASONAL")):
             del big[2]
+
         keywords = {
             "RATINGS": "num_ratings",
             "CALORIES": "calories",
@@ -114,6 +117,7 @@ class RateBeer(object):
                     key = keywords[keyword]
                     output[key] = big[location].text
                     break
+
         output.update({
             'name': s_contents_rows[0].find_all('td')[1].h1.text,
             'overall_rating': info[0].find_all('span', attrs={'itemprop': 'average'})[0].text,
@@ -159,12 +163,14 @@ class RateBeer(object):
             content = soup.find('div', id='container').find('table').find_all('tr')[5]
             _ = [x.extract() for x in content.find_all('table')]  # strip ad section
             review_tuples = zip(*[iter(content.find_all('div'))] * 4)  # basically magic
+
             for review in review_tuples:
                 detail_tuples = zip(*[iter(review[0].find_all(["big", "small"]))] * 2)
                 details = dict([(
                     label.text.lower().strip().encode("ascii", "ignore"), 
                     rating.text,
                 ) for (label, rating) in detail_tuples])
+
                 details.update({'text': review[3].text})
                 output.append(details)
         return output
@@ -197,6 +203,7 @@ class RateBeer(object):
             'country': self._find_span(s_contents[0], 'addressCountry').text,
             'postal_code': self._find_span(s_contents[0], 'postalCode').text,
         }
+
         if include_beers:
             output.update({'beers': []})
             s_beer_trs = iter(s_contents[8].find('table', 'maintable nohover').find_all('tr'))
@@ -211,4 +218,3 @@ class RateBeer(object):
                 }
                 output['beers'].append(beer)
         return output
-        
