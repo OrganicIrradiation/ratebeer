@@ -18,12 +18,10 @@ class RateBeer(object):
     for the full README.
 
     """
+    BASE_URL = "http://www.ratebeer.com"
 
     class PageNotFound(Exception):
         pass
-
-    def __init__(self):
-        self.BASE_URL = "http://www.ratebeer.com"
 
     def _get_soup(self, url):
         req = requests.get(self.BASE_URL + url, allow_redirects=True)
@@ -44,7 +42,7 @@ class RateBeer(object):
         s_results = soup.find_all('table', {'class': 'results'})
         output = {"breweries": [], "beers": []}
         beer_location = 0
-        
+
         # find brewery information
         if any("brewers" in s for s in soup.find_all("h1")):
             s_breweries = s_results[0].find_all('tr')
