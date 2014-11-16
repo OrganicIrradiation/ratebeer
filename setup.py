@@ -5,10 +5,9 @@ try:
 except ImportError:
     from distutils.core import setup
 
-import ratebeer
 
 setup(name="ratebeer",
-      version="1.2.2",
+      version="1.2.3",
       description="RateBeer.com data scraper.",
       keywords="ratebeer rate beer ratings",
       author="Andrew Lilja",

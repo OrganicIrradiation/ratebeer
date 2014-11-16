@@ -3,7 +3,7 @@ import re
 
 from bs4 import BeautifulSoup
 import requests
-    
+
 
 class RateBeer(object):
     """
@@ -11,10 +11,10 @@ class RateBeer(object):
 
     >>> summit_search = RateBeer().search("summit extra pale ale")
 
-    A utility for searching RateBeer.com, finding information about beers, breweries, 
+    A utility for searching RateBeer.com, finding information about beers, breweries,
     and reviews. The nature of web scraping means that this package is offered in perpetual beta.
 
-    Requires BeautifulSoup, Requests, and lxml. See https://github.com/alilja/ratebeer 
+    Requires BeautifulSoup, Requests, and lxml. See https://github.com/alilja/ratebeer
     for the full README.
 
     """
@@ -60,7 +60,7 @@ class RateBeer(object):
         if any("beers" in s for s in soup.find_all("h1")) or not soup.find_all(text="0 beers"):
             s_beer_trs = iter(s_results[beer_location].find_all('tr'))
             next(s_beer_trs)
-            for row in s_beer_trs: 
+            for row in s_beer_trs:
                 link = row.find('td', 'results').a
                 align_right = row.find_all("td", {'align': 'right'})
                 output['beers'].append({
@@ -73,7 +73,7 @@ class RateBeer(object):
         return output
 
     def beer(self, url):
-        """Returns information about a specific beer. 
+        """Returns information about a specific beer.
 
         Args:
             url (string): The specific url of the beer. Looks like:
@@ -127,7 +127,7 @@ class RateBeer(object):
         return output
 
     def reviews(self, url, pages=1, start_page=1, review_order="most recent"):
-        """Returns reviews for a specific beer. 
+        """Returns reviews for a specific beer.
 
         Args:
             url (string): The specific url of the beer. Looks like:
@@ -165,7 +165,7 @@ class RateBeer(object):
             for review in review_tuples:
                 detail_tuples = zip(*[iter(review[0].find_all(["big", "small"]))] * 2)
                 details = dict([(
-                    label.text.lower().strip().encode("ascii", "ignore"), 
+                    label.text.lower().strip().encode("ascii", "ignore"),
                     rating.text,
                 ) for (label, rating) in detail_tuples])
 
@@ -174,7 +174,7 @@ class RateBeer(object):
         return output
 
     def brewery(self, url, include_beers=True):
-        """Returns information about a specific brewery. 
+        """Returns information about a specific brewery.
 
         Args:
             url (string): The specific url of the beer. Looks like:
