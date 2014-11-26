@@ -98,7 +98,7 @@ RateBeer().search("summit extra pale ale")
 <pre><code>
     >>> rb = RateBeer()
     >>> rb.search("summit extra pale ale")
-    {'beers': [{'name': [u'Summit Extra Pale Ale'],
+    {'beers': [{'name': u'Summit Extra Pale Ale',
             'num_ratings': <td align="right">678</td>,
             'rating': <td align="right">73  </td>,
             'url': u'/beer/summit-extra-pale-ale/7344/'}],
