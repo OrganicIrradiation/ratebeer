@@ -186,6 +186,16 @@ RateBeer().search("summit extra pale ale")
       'text': u'Bottle pour at the Deschutes tasting. Pours a clear amber with a beige head of foam. The aroma is citrussy ang grassy. Taste is fairly bitter with complex layers of tea, earth, citrus, and herbs coming across in waves of bitterness. Medium bodied with medium carbonation. Decent IPA. '}]
 </code></pre>
 
+* `beer_style_list` -- Returns a dictionary containing the beer style name and a link to that page.
+
+<pre><code>
+    >>> rb.beer_style_list()
+    {u'Abbey Dubbel': '/beerstyles/abbey-dubbel/71/',
+     ...
+     u'Zwickel/Keller/Landbier': '/beerstyles/zwickel-keller-landbier/74/'}
+</code></pre>
+
+
 Tests
 -----
 `ratebeer` uses the standard Python unit testing library.

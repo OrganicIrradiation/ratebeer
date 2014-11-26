@@ -232,3 +232,5 @@ class RateBeer(object):
             for line in lines:
                 styles[line.text] = line.a.get('href')
         return styles
+
+    def beer_style(self, url):
