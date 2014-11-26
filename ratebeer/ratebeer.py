@@ -227,7 +227,6 @@ class RateBeer(object):
         styles = {}
 
         soup = self._get_soup("/beerstyles/")
-        print soup
         columns = soup.find_all('table')[2].find_all('td')
         for column in columns:
             lines = [li for li in column.find_all('li')]
