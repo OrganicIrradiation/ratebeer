@@ -216,3 +216,19 @@ class RateBeer(object):
                 }
                 output['beers'].append(beer)
         return output
+
+    def beer_style_list(self):
+        """Returns the list of beer styles from the beer styles page.
+
+        Returns:
+            A dictionary, with beer styles for keys and urls for values."""
+        styles = {}
+
+        soup = self._get_soup("/beerstyles/")
+        print soup
+        columns = soup.find_all('table')[2].find_all('td')
+        for column in columns:
+            lines = [li for li in column.find_all('li')]
+            for line in lines:
+                styles[line.text] = line.a.get('href')
+        return styles
