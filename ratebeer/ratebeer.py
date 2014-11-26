@@ -236,10 +236,19 @@ class RateBeer(object):
         return styles
 
     def beer_style(self, url, sort_type="overall"):
+        """Get all the beers from a specific beer style page.
+
+        Args:
+            url (string): The specific url of the beer style. Looks like:
+                "/beerstyles/abbey-dubbel/71/"
+            sort_type (string): The sorting of the results. "overall" returns the highest-
+                rated beers, while "trending" returns the newest and trending ones.
+
+        Returns:
+            A list of dictionaries containing the beers."""
         sort_type = sort_type.lower()
         url_codes = {"overall": 0, "trending": 1}
         sort_flag = url_codes.get(sort_type)
-        print sort_flag
         if sort_flag is None:
             raise ValueError("Invalid ``sort_type``.")
         style_id = re.search(r"/(?P<id>\d*)/", url).group('id')
