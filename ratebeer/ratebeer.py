@@ -25,6 +25,8 @@ class RateBeer(object):
 
     def _get_soup(self, url):
         req = requests.get(RateBeer._BASE_URL + url, allow_redirects=True)
+        if "ratebeer robot oops" in req.text.lower():
+            raise RateBeer.PageNotFound(url)
         return BeautifulSoup(req.text, "lxml")
 
     def search(self, query):
@@ -151,7 +153,7 @@ class RateBeer(object):
             "highest score": 3
         }
         url_flag = url_codes.get(review_order)
-        if not url_flag:
+        if url_flag is None:
             raise ValueError("Invalid ``review_order``.")
 
         output = []
@@ -233,4 +235,31 @@ class RateBeer(object):
                 styles[line.text] = line.a.get('href')
         return styles
 
-    def beer_style(self, url):
+    def beer_style(self, url, sort_type="overall"):
+        sort_type = sort_type.lower()
+        url_codes = {"overall": 0, "trending": 1}
+        sort_flag = url_codes.get(sort_type)
+        print sort_flag
+        if sort_flag is None:
+            raise ValueError("Invalid ``sort_type``.")
+        style_id = re.search(r"/(?P<id>\d*)/", url).group('id')
+
+        req = requests.post(
+            RateBeer._BASE_URL +
+            "/ajax/top-beer-by-style.asp?style={0}&sort={1}&order=0&min=10&max=9999&retired=0&new=0&mine=0&"
+            .format(style_id, sort_flag),
+            allow_redirects=True
+        )
+        soup = BeautifulSoup(req.text, "lxml")
+        rows = iter(soup.table.find_all('tr'))
+        next(rows)
+
+        output = []
+        for row in rows:
+            data = row.find_all('td')
+            output.append({
+                'name': data[1].text,
+                'url': data[1].a.get('href'),
+                'rating': data[4].text
+                })
+        return output

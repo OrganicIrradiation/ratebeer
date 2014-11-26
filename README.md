@@ -6,6 +6,10 @@ Changes
 
 Note that the nature of web scraping means this will be in **perpetual beta.**
 
+###v1.3
+
+* Added ``beer_style_list`` and ``beer_style``.
+
 ###v1.2
 
 * Everything conforms to PEP8 now. Thanks to the fine folks [here](http://codereview.stackexchange.com/questions/69909/ratebeer-com-scraper).
