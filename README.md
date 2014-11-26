@@ -199,6 +199,19 @@ RateBeer().search("summit extra pale ale")
      u'Zwickel/Keller/Landbier': '/beerstyles/zwickel-keller-landbier/74/'}
 </code></pre>
 
+* `beer_style` -- A list of dictionaries containing the beers from the beer style page. Takes a `url` to a beer style and an optional `sort_type`: `overall` returns the highest-rated beers (default behavior) and `trending` returns, well, the trending beers.
+
+<pre><code>
+    >>> rb.beer_style("/beerstyles/abbey-dubbel/71/")
+    [{'name': u'St. Bernardus Prior 8',
+      'rating': u'3.85',
+      'url': '/beer/st-bernardus-prior-8/2531/'},
+       ...
+     {'name': u'Chama River Demolition Dubbel',
+      'rating': u'3.46',
+      'url': '/beer/chama-river-demolition-dubbel/33903/'}]
+</code></pre>
+
 
 Tests
 -----
