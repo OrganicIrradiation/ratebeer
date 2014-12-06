@@ -22,6 +22,9 @@ class RateBeer(object):
 
     class PageNotFound(Exception):
         pass
+    
+    class AliasedBeer(Exception):
+        pass
 
     def _get_soup(self, url):
         req = requests.get(RateBeer._BASE_URL + url, allow_redirects=True)
@@ -97,6 +100,9 @@ class RateBeer(object):
         # beer reference or not
         if "beer reference" in s_contents_rows[0].find_all('td')[1].h1.contents:
             raise RateBeer.PageNotFound(url)
+            
+        if "Also known as " in s_contents_rows[1].find_all('td')[1].div.div.contents:
+            raise RateBeer.AliasedBeer(url)
 
         info = s_contents_rows[1].tr.find_all('td')
         additional_info = s_contents_rows[1].find_all('td')[1].div.small
@@ -107,6 +113,7 @@ class RateBeer(object):
 
         keywords = {
             "RATINGS": "num_ratings",
+            "WEIGHTED AVG": "weighted_avg",
             "CALORIES": "calories",
             "ABV": "abv",
             "IBU": "ibu",
@@ -118,13 +125,22 @@ class RateBeer(object):
                     output[key] = big[location].text
                     break
 
+        _name = s_contents_rows[0].find_all('td')[1].h1
+        _overall_rating = info[0].find_all('span', attrs={'itemprop': 'average'})
+        _style_rating = info[0].find_all('div')
+        try:
+            _style_rating[2]
+        except IndexError:
+            _style_rating = None
+        _brewery = info[1].a
+        _style = info[1].div.find_all('a')[1]
         output.update({
-            'name': s_contents_rows[0].find_all('td')[1].h1.text,
-            'overall_rating': info[0].find_all('span', attrs={'itemprop': 'average'})[0].text,
-            'style_rating': info[0].find_all('div')[2].div.span.text,
-            'brewery': info[1].a.text,
+            'name': _name.text if _name else None,
+            'overall_rating': _overall_rating[0].text if _overall_rating else None,
+            'style_rating': _style_rating[2].div.span.text if _style_rating else None,
+            'brewery': _brewery.text if _brewery else None,
             'brewery_url': info[1].a.get('href'),
-            'style': info[1].div.find_all('a')[1].text,
+            'style': _style.text if _style else None,
         })
         return output
 
@@ -185,7 +201,9 @@ class RateBeer(object):
         Returns:
             A dictionary of attributes about that brewery."""
         def _find_span(search_soup, item_prop):
-            return search_soup.find('span', attrs={'itemprop': item_prop})
+            output = search_soup.find('span', attrs={'itemprop': item_prop})
+            output = output.text if output else None
+            return output
 
         soup = self._get_soup(url)
         try:
@@ -197,11 +215,11 @@ class RateBeer(object):
             'name': s_contents[8].h1.text,
             'type': re.search(r"Type: +(?P<type>[^ ]+)",
                               s_contents[8].find_all('span', 'beerfoot')[1].text).group('type'),
-            'street': _find_span(s_contents[0], 'streetAddress').text,
-            'city': _find_span(s_contents[0], 'addressLocality').text,
-            'state': _find_span(s_contents[0], 'addressRegion').text,
-            'country': _find_span(s_contents[0], 'addressCountry').text,
-            'postal_code': _find_span(s_contents[0], 'postalCode').text,
+            'street': _find_span(s_contents[0], 'streetAddress'),
+            'city': _find_span(s_contents[0], 'addressLocality'),
+            'state': _find_span(s_contents[0], 'addressRegion'),
+            'country': _find_span(s_contents[0], 'addressCountry'),
+            'postal_code': _find_span(s_contents[0], 'postalCode'),
         }
 
         if include_beers:
@@ -209,14 +227,15 @@ class RateBeer(object):
             s_beer_trs = iter(s_contents[8].find('table', 'maintable nohover').find_all('tr'))
             next(s_beer_trs)
             for row in s_beer_trs:
-                beer = {
-                    'name': row.a.text,
-                    'url': row.a.get('href'),
-                    'id': re.search(r"/(?P<id>\d*)/", row.a.get('href')).group('id'),
-                    'rating': row.find_all('td')[4].text.strip(),
-                    'num_ratings': row.find_all('td')[6].text.strip(),
-                }
-                output['beers'].append(beer)
+                if len(row.find_all('td')) > 1:
+                    beer = {
+                        'name': row.a.text,
+                        'url': row.a.get('href'),
+                        'id': re.search(r"/(?P<id>\d*)/", row.a.get('href')).group('id'),
+                        'rating': row.find_all('td')[4].text.strip(),
+                        'num_ratings': row.find_all('td')[6].text.strip(),
+                    }
+                    output['beers'].append(beer)
         return output
 
     def beer_style_list(self):
