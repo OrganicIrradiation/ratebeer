@@ -106,23 +106,22 @@ class RateBeer(object):
 
         info = s_contents_rows[1].tr.find_all('td')
         additional_info = s_contents_rows[1].find_all('td')[1].div.small
-        abbr = additional_info.find_all(["abbr", "a"])
-        big = additional_info.find_all("big")
-        if additional_info.find(text=re.compile("SEASONAL")):
-            del big[2]
+        add_info = additional_info.text.split(u'\xa0\xa0')
+        add_info = [s.split(': ') for s in add_info]
 
         keywords = {
             "RATINGS": "num_ratings",
+            "MEAN": "mean",
             "WEIGHTED AVG": "weighted_avg",
+            "SEASONAL": "seasonal",
             "CALORIES": "calories",
             "ABV": "abv",
             "IBU": "ibu",
         }
-        for location, label in enumerate(abbr):
+        for item in add_info:
             for keyword in keywords:
-                if keyword in label.text:
-                    key = keywords[keyword]
-                    output[key] = big[location].text
+                if keyword in item[0]:
+                    output[keywords[keyword]] = item[1]
                     break
 
         _name = s_contents_rows[0].find_all('td')[1].h1
