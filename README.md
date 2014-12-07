@@ -6,6 +6,10 @@ Changes
 
 Note that the nature of web scraping means this will be in **perpetual beta.**
 
+###v1.3.2
+
+* Captures aliases for beer names.
+
 ###v1.3
 
 * Added ``beer_style_list`` and ``beer_style``.
