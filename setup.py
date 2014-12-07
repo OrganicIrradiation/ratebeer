@@ -1,5 +1,21 @@
 #!/usr/bin/env python
 
+"""
+RateBeer.com data scraper. Makes getting information from RateBeer.com as easy as:
+
+.. code:: python
+
+    >>> rb = RateBeer()
+    >>> rb.search("summit extra pale ale")
+    {'beers': [{'name': [u'Summit Extra Pale Ale'],
+        'num_ratings': 678,
+        'rating': 73  ,
+        'url': u'/beer/summit-extra-pale-ale/7344/'}],
+    'breweries': []}
+
+See the full README at https://github.com/alilja/ratebeer
+"""
+
 try:
     from setuptools import setup
 except ImportError:
@@ -8,19 +24,9 @@ except ImportError:
 
 setup(
     name="ratebeer",
-    version="1.3",
-    description="""RateBeer.com data scraper. Makes getting information from RateBeer.com as easy as:<br />
-    <br />
-    >>> rb = RateBeer()<br />
-    >>> rb.search("summit extra pale ale")<br />
-    {'beers': [{'name': [u'Summit Extra Pale Ale'],<br />
-        'num_ratings': 678,<br />
-        'rating': 73  ,<br />
-        'url': u'/beer/summit-extra-pale-ale/7344/'}],<br />
-    'breweries': []}<br />
-    <br />
-    See the full README at https://github.com/alilja/ratebeer
-    """,
+    version="1.3.2",
+    description="Python API for RateBeer.com",
+    long_description=__doc__,
     keywords="ratebeer rate beer ratings",
     author="Andrew Lilja",
     author_email="andrewlilja@gmail.com",
