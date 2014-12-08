@@ -1,7 +1,6 @@
 from exceptions import Exception
-import re
-
 from bs4 import BeautifulSoup
+import re
 import requests
 
 
@@ -11,20 +10,25 @@ class RateBeer(object):
 
     >>> summit_search = RateBeer().search("summit extra pale ale")
 
-    A utility for searching RateBeer.com, finding information about beers, breweries,
-    and reviews. The nature of web scraping means that this package is offered in perpetual beta.
+    A utility for searching RateBeer.com, finding information about beers,
+    breweries, and reviews. The nature of web scraping means that this package
+    is offered in perpetual beta.
 
-    Requires BeautifulSoup, Requests, and lxml. See https://github.com/alilja/ratebeer
-    for the full README.
+    Requires BeautifulSoup4, Requests, and lxml. See
+    https://github.com/alilja/ratebeer for the full README.
 
     """
     _BASE_URL = "http://www.ratebeer.com"
 
     class PageNotFound(Exception):
+        """Returns the URL of the page not found."""
         pass
-    
+
     class AliasedBeer(Exception):
-        pass
+        """Returns the old and new urls for an aliased beer."""
+        def __init__(self, oldurl, newurl):
+            self.oldurl = oldurl
+            self.newurl = newurl
 
     def _get_soup(self, url):
         req = requests.get(RateBeer._BASE_URL + url, allow_redirects=True)
@@ -39,10 +43,12 @@ class RateBeer(object):
             query (string): The text of the search.
 
         Returns:
-            A dictionary containing two lists, ``breweries`` and ``beers``. Each list
-            contains a dictionary of attributes of that brewery or beer.
+            A dictionary containing two lists, ``breweries`` and ``beers``.
+            Each list contains a dictionary of attributes of that brewery or
+            beer.
         """
-        r = requests.post(RateBeer._BASE_URL + "/findbeer.asp", data={"BeerName": query})
+        r = requests.post(RateBeer._BASE_URL + "/findbeer.asp",
+                          data={"BeerName": query})
         soup = BeautifulSoup(r.text, "lxml")
         s_results = soup.find_all('table', {'class': 'results'})
         output = {"breweries": [], "beers": []}
@@ -94,21 +100,20 @@ class RateBeer(object):
             s_contents_rows = soup.find('div', id='container').find('table').find_all('tr')
         except AttributeError:
             raise RateBeer.PageNotFound(url)
-        # ratebeer pages don't actually 404, they just send you to this weird "beer reference"
-        # page but the url doesn't actually change, it just seems like it's all getting done
-        # server side -- so we have to look for the contents h1 to see if we're looking at the
-        # beer reference or not
+        # ratebeer pages don't actually 404, they just send you to this weird
+        # "beer reference" page but the url doesn't actually change, it just
+        # seems like it's all getting done server side -- so we have to look
+        # for the contents h1 to see if we're looking at the beer reference or
+        # not
         if "beer reference" in s_contents_rows[0].find_all('td')[1].h1.contents:
             raise RateBeer.PageNotFound(url)
-            
+
         if "Also known as " in s_contents_rows[1].find_all('td')[1].div.div.contents:
-            raise RateBeer.AliasedBeer(url)
+            raise RateBeer.AliasedBeer(url, s_contents_rows[1].find_all('td')[1].div.div.a['href'])
 
-        info = s_contents_rows[1].tr.find_all('td')
-        additional_info = s_contents_rows[1].find_all('td')[1].div.small
-        add_info = additional_info.text.split(u'\xa0\xa0')
-        add_info = [s.split(': ') for s in add_info]
-
+        brew_info_row = s_contents_rows[1].find_all('td')[1].div.small
+        brew_info = brew_info_row.text.split(u'\xa0\xa0')
+        brew_info = [s.split(': ') for s in brew_info]
         keywords = {
             "RATINGS": "num_ratings",
             "MEAN": "mean",
@@ -118,29 +123,46 @@ class RateBeer(object):
             "ABV": "abv",
             "IBU": "ibu",
         }
-        for item in add_info:
+        for item in brew_info:
             for keyword in keywords:
                 if keyword in item[0]:
                     output[keywords[keyword]] = item[1]
                     break
 
+        info = s_contents_rows[1].tr.find_all('td')
         _name = s_contents_rows[0].find_all('td')[1].h1
-        _overall_rating = info[0].find_all('span', attrs={'itemprop': 'average'})
+        _overall_rating = info[0].find_all('span', itemprop='average')
         _style_rating = info[0].find_all('div')
         try:
             _style_rating[2]
         except IndexError:
             _style_rating = None
-        _brewery = info[1].a
-        _style = info[1].div.find_all('a')[1]
-        output.update({
-            'name': _name.text if _name else None,
-            'overall_rating': _overall_rating[0].text if _overall_rating else None,
-            'style_rating': _style_rating[2].div.span.text if _style_rating else None,
-            'brewery': _brewery.text if _brewery else None,
-            'brewery_url': info[1].a.get('href'),
-            'style': _style.text if _style else None,
-        })
+        brewery_info = info[1].find('div')
+        _brewery = brewery_info.contents[0].findAll('a')[0]
+        if 'Brewed at' in brewery_info.contents[0].text:
+            _brewed_at = brewery_info.contents[0].findAll('a')[1]
+        else:
+            _brewed_at = None
+        _style = brewery_info.contents[3]
+        _description = s_contents_rows[1].find_all('td')[1].find('div', style='border: 1px solid #e0e0e0; background: #fff; padding: 14px; color: #777;')
+
+        output['name'] = _name.text.strip()
+        output['url'] = url
+        if _overall_rating:
+            output['overall_rating'] = _overall_rating[0].text.strip()
+        if _style_rating:
+            output['style_rating'] = _style_rating[2].div.span.text.strip()
+        if _brewery:
+            output['brewery'] = _brewery.text.strip()
+            output['brewery_url'] = _brewery['href']
+        if _brewed_at:
+            output['brewed_at'] = _brewed_at.text.strip()
+            output['brewed_at_url'] = _brewed_at['href']
+        if _style:
+            output['style'] = _style.text.strip()
+        if not 'No commercial description' in _description.text:
+            [s.extract() for s in _description('small')]
+            output['description'] = '\n'.join([s for s in _description.strings]).strip()
         return output
 
     def reviews(self, url, pages=1, start_page=1, review_order="most recent"):
@@ -155,10 +177,11 @@ class RateBeer(object):
                 most recent: Newer reviews appear earlier.
                 top raters: RateBeer.com top raters appear earlier.
                 highest score: Reviews with the highest overall score appear
-                    earlier.
+                earlier.
 
         Returns:
-            A list of dictionaries, containing the information about the review."""
+            A list of dictionaries, containing the information about the review.
+        """
         assert pages > 0, "``pages`` must be greater than 0"
         assert start_page > 0, "``start_page`` must be greater than 0"
         review_order = review_order.lower()
@@ -241,7 +264,8 @@ class RateBeer(object):
         """Returns the list of beer styles from the beer styles page.
 
         Returns:
-            A dictionary, with beer styles for keys and urls for values."""
+            A dictionary, with beer styles for keys and urls for values.
+        """
         styles = {}
 
         soup = self._get_soup("/beerstyles/")
@@ -258,11 +282,13 @@ class RateBeer(object):
         Args:
             url (string): The specific url of the beer style. Looks like:
                 "/beerstyles/abbey-dubbel/71/"
-            sort_type (string): The sorting of the results. "overall" returns the highest-
-                rated beers, while "trending" returns the newest and trending ones.
+            sort_type (string): The sorting of the results. "overall" returns
+                the highest- rated beers, while "trending" returns the newest
+                and trending ones.
 
         Returns:
-            A list of dictionaries containing the beers."""
+            A list of dictionaries containing the beers.
+        """
         sort_type = sort_type.lower()
         url_codes = {"overall": 0, "trending": 1}
         sort_flag = url_codes.get(sort_type)
