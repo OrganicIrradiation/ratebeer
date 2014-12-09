@@ -356,6 +356,3 @@ class RateBeer(object):
                 'rating': data[4].text
             })
         return output
-
-
-print RateBeer().beer("/beer/21st-amendment-summit-ipa/61118/")
