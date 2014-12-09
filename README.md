@@ -6,6 +6,12 @@ Changes
 
 Note that the nature of web scraping means this will be in **perpetual beta.**
 
+###v1.3.3
+
+* Captures more meta data.
+* Plays better with foreign beers.
+* Now if information is missing from a beer entry, its key is not added to the ``beer`` output.
+
 ###v1.3.2
 
 * Captures aliases for beer names.
