@@ -123,10 +123,12 @@ class RateBeer(object):
             "ABV": "abv",
             "IBU": "ibu",
         }
-        for item in brew_info:
+        for meta_name, meta_data in brew_info:
             for keyword in keywords:
-                if keyword in item[0]:
-                    output[keywords[keyword]] = item[1]
+                if keyword in meta_name:
+                    if keyword == "MEAN":
+                        meta_data = meta_data[:meta_data.find("/")]
+                    output[keywords[keyword]] = meta_data
                     break
 
         info = s_contents_rows[1].tr.find_all('td')
