@@ -130,39 +130,43 @@ class RateBeer(object):
                     break
 
         info = s_contents_rows[1].tr.find_all('td')
-        _name = s_contents_rows[0].find_all('td')[1].h1
-        _overall_rating = info[0].find_all('span', itemprop='average')
-        _style_rating = info[0].find_all('div')
-        try:
-            _style_rating[2]
-        except IndexError:
-            _style_rating = None
-        brewery_info = info[1].find('div')
-        _brewery = brewery_info.contents[0].findAll('a')[0]
-        if 'Brewed at' in brewery_info.contents[0].text:
-            _brewed_at = brewery_info.contents[0].findAll('a')[1]
-        else:
-            _brewed_at = None
-        _style = brewery_info.contents[3]
-        _description = s_contents_rows[1].find_all('td')[1].find('div', style='border: 1px solid #e0e0e0; background: #fff; padding: 14px; color: #777;')
 
-        output['name'] = _name.text.strip()
-        output['url'] = url
-        if _overall_rating:
-            output['overall_rating'] = _overall_rating[0].text.strip()
-        if _style_rating:
-            output['style_rating'] = _style_rating[2].div.span.text.strip()
-        if _brewery:
-            output['brewery'] = _brewery.text.strip()
-            output['brewery_url'] = _brewery['href']
-        if _brewed_at:
-            output['brewed_at'] = _brewed_at.text.strip()
-            output['brewed_at_url'] = _brewed_at['href']
-        if _style:
-            output['style'] = _style.text.strip()
-        if not 'No commercial description' in _description.text:
-            [s.extract() for s in _description('small')]
-            output['description'] = '\n'.join([s for s in _description.strings]).strip()
+        brewery_info = info[1].find('div').contents
+        brewery = brewery_info[0].findAll('a')[0]
+        brewed_at = None
+        if 'Brewed at' in brewery_info[0].text:
+            brewed_at = brewery_info[0].findAll('a')[1]
+
+        style = brewery_info[3]
+        description = s_contents_rows[1].find_all('td')[1].find(
+            'div', style=(
+                'border: 1px solid #e0e0e0; background: #fff; '
+                'padding: 14px; color: #777;'
+            )
+        )
+
+        name = s_contents_rows[0].find_all('td')[1].h1
+        overall_rating = info[0].find_all('span', itemprop='average')
+        style_rating = info[0].find_all('div')
+        if len(style_rating) < 2:
+            style_rating = None
+
+        output['name'] = name.text.strip()
+        if overall_rating:
+            output['overall_rating'] = overall_rating[0].text.strip()
+        if style_rating:
+            output['style_rating'] = style_rating[2].div.span.text.strip()
+        if brewery:
+            output['brewery'] = brewery.text.strip()
+            output['brewery_url'] = brewery['href']
+        if brewed_at:
+            output['brewed_at'] = brewed_at.text.strip()
+            output['brewed_at_url'] = brewed_at['href']
+        if style:
+            output['style'] = style.text.strip()
+        if 'No commercial description' not in description.text:
+            [s.extract() for s in description('small')]
+            output['description'] = ' '.join([s for s in description.strings]).strip()
         return output
 
     def reviews(self, url, pages=1, start_page=1, review_order="most recent"):
@@ -298,7 +302,10 @@ class RateBeer(object):
 
         req = requests.post(
             RateBeer._BASE_URL +
-            "/ajax/top-beer-by-style.asp?style={0}&sort={1}&order=0&min=10&max=9999&retired=0&new=0&mine=0&"
+            (
+                "/ajax/top-beer-by-style.asp?style={0}&sort={1}"
+                "&order=0&min=10&max=9999&retired=0&new=0&mine=0&"
+            )
             .format(style_id, sort_flag),
             allow_redirects=True
         )
@@ -313,5 +320,9 @@ class RateBeer(object):
                 'name': data[1].text,
                 'url': data[1].a.get('href'),
                 'rating': data[4].text
-                })
+            })
         return output
+
+
+beer = RateBeer().beer('/beer/ordrup-soldug/107772/')
+print beer
