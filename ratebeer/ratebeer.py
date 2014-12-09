@@ -324,7 +324,3 @@ class RateBeer(object):
                 'rating': data[4].text
             })
         return output
-
-
-beer = RateBeer().beer('/beer/ordrup-soldug/107772/')
-print beer
