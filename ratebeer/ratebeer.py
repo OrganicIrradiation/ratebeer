@@ -154,6 +154,12 @@ class RateBeer(object):
                 if keyword in meta_name:
                     if keyword == "MEAN":
                         meta_data = meta_data[:meta_data.find("/")]
+                    if keyword == "ABV":
+                        meta_data = meta_data[:-1]
+                    try:
+                        meta_data = float(meta_data)
+                    except ValueError:
+                        pass
                     output[keywords[keyword]] = meta_data
                     break
 
@@ -193,7 +199,7 @@ class RateBeer(object):
         if style:
             output['style'] = style.text.strip()
         if 'No commercial description' not in description.text:
-            [s.extract() for s in description('small')]
+            _ = [s.extract() for s in description('small')]
             output['description'] = ' '.join([s for s in description.strings]).strip()
         return output
 
@@ -350,3 +356,6 @@ class RateBeer(object):
                 'rating': data[4].text
             })
         return output
+
+
+print RateBeer().beer("/beer/21st-amendment-summit-ipa/61118/")
