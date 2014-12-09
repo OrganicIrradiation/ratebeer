@@ -9,8 +9,8 @@ class TestSearch(unittest.TestCase):
         self.assertListEqual(results['breweries'], [])
         self.assertIsNotNone(results['beers'])
         self.assertDictContainsSubset({
-            'url': '/beer/deschutes-inversion-ipa/55610/', 
-            'name': u'Deschutes Inversion IPA', 
+            'url': '/beer/deschutes-inversion-ipa/55610/',
+            'name': u'Deschutes Inversion IPA',
             'id': '55610'
         }, results['beers'][0])
 
@@ -27,7 +27,7 @@ class TestSearch(unittest.TestCase):
             'brewery': u'New Belgium Brewing Company',
             'brewery_url': u'/brewers/new-belgium-brewing-company/77/',
             'style': u'American Pale Ale',
-            'ibu': u'38'
+            'ibu': 38
         }, results)
 
         results = RateBeer().beer("/beer/deschutes-inversion-ipa/55610/")
@@ -37,7 +37,7 @@ class TestSearch(unittest.TestCase):
             'brewery': u'Deschutes Brewery',
             'brewery_url': u'/brewers/deschutes-brewery/233/',
             'style': u'India Pale Ale (IPA)',
-            'ibu': u'80'
+            'ibu': 80
         }, results)
 
     def test_brewery(self):

@@ -24,7 +24,7 @@ except ImportError:
 
 setup(
     name="ratebeer",
-    version="1.3.2",
+    version="1.3.4",
     description="Python API for RateBeer.com",
     long_description=__doc__,
     keywords="ratebeer rate beer ratings",

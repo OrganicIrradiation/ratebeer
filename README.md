@@ -6,6 +6,10 @@ Changes
 
 Note that the nature of web scraping means this will be in **perpetual beta.**
 
+###v1.3.4
+
+* Metadata for beers returns floats when appropriate.
+
 ###v1.3.3
 
 * Captures more meta data.
