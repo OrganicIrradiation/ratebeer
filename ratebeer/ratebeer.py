@@ -52,12 +52,19 @@ class RateBeer(object):
         soup = BeautifulSoup(r.text, "lxml")
         s_results = soup.find_all('table', {'class': 'results'})
         output = {"breweries": [], "beers": []}
-        beer_location = 0
+
+        # Locate rows that contain the brewery and beer info
+        brewers_loc = None
+        beers_loc = None
+        for idx, val in enumerate(soup.find_all("h1")):
+            if "brewers" in val:
+                brewers_loc = idx
+            elif "beers" in val:
+                beers_loc = idx
 
         # find brewery information
-        if any("brewers" in s for s in soup.find_all("h1")):
-            s_breweries = s_results[0].find_all('tr')
-            beer_location = 1
+        if brewers_loc != None:
+            s_breweries = s_results[brewers_loc-1].find_all('tr')
             for row in s_breweries:
                 location = row.find('td', {'align': 'right'})
                 output['breweries'].append({
@@ -68,8 +75,8 @@ class RateBeer(object):
                 })
 
         # find beer information
-        if any("beers" in s for s in soup.find_all("h1")) or not soup.find_all(text="0 beers"):
-            s_beer_trs = iter(s_results[beer_location].find_all('tr'))
+        if beers_loc != None and not soup.find_all(text="0 beers"):
+            s_beer_trs = iter(s_results[beers_loc-1].find_all('tr'))
             next(s_beer_trs)
             for row in s_beer_trs:
                 link = row.find('td', 'results').a
