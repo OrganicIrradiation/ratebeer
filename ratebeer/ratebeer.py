@@ -186,16 +186,19 @@ class RateBeer(object):
         )
 
         name = s_contents_rows[0].find_all('td')[1].h1
-        overall_rating = info[0].find_all('span', itemprop='average')
-        style_rating = info[0].find_all('div')
-        if len(style_rating) < 2:
+        ratings = info[0].findAll('div')
+        if len(ratings) > 1:
+            overall_rating = ratings[1].findAll('span')
+            style_rating = ratings[3].findAll('span')
+        else:
+            overall_rating = None
             style_rating = None
 
         output['name'] = name.text.strip()
-        if overall_rating:
-            output['overall_rating'] = overall_rating[0].text.strip()
-        if style_rating:
-            output['style_rating'] = style_rating[2].div.span.text.strip()
+        if overall_rating and overall_rating[1].text != 'n/a':
+            output['overall_rating'] = int(overall_rating[1].text)
+        if style_rating and style_rating[0].text != 'n/a':
+            output['style_rating'] = int(style_rating[0].text)
         if brewery:
             output['brewery'] = brewery.text.strip()
             output['brewery_url'] = brewery.get('href')
