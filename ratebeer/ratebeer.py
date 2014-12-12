@@ -25,7 +25,6 @@
 
 from exceptions import Exception
 import re
-
 import requests
 from bs4 import BeautifulSoup
 
@@ -94,7 +93,7 @@ class RateBeer(object):
             for row in s_breweries:
                 location = row.find('td', {'align': 'right'})
                 output['breweries'].append({
-                    "name": row.a.contents,
+                    "name": row.a.text,
                     "url": row.a.get('href'),
                     "id": re.search(r"/(?P<id>\d*)/", row.a.get('href')).group('id'),
                     "location": location.text.strip(),
@@ -199,10 +198,10 @@ class RateBeer(object):
             output['style_rating'] = style_rating[2].div.span.text.strip()
         if brewery:
             output['brewery'] = brewery.text.strip()
-            output['brewery_url'] = brewery['href']
+            output['brewery_url'] = brewery.get('href')
         if brewed_at:
             output['brewed_at'] = brewed_at.text.strip()
-            output['brewed_at_url'] = brewed_at['href']
+            output['brewed_at_url'] = brewed_at.get('href')
         if style:
             output['style'] = style.text.strip()
         if 'No commercial description' not in description.text:
