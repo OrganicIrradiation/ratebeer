@@ -75,44 +75,40 @@ class RateBeer(object):
         r = requests.post(RateBeer._BASE_URL + "/findbeer.asp",
                           data={"BeerName": query})
         soup = BeautifulSoup(r.text, "lxml")
-        s_results = soup.find_all('table', {'class': 'results'})
+        soup_results = soup.find_all('table', {'class': 'results'})
         output = {"breweries": [], "beers": []}
 
         # Locate rows that contain the brewery and beer info
-        brewers_loc = None
-        beers_loc = None
-        for idx, val in enumerate(soup.find_all("h1")):
+        for index, val in enumerate(soup.find_all("h1")):
             if "brewers" in val:
-                brewers_loc = idx
+                # find brewery information
+                soup_breweries = soup_results[index - 1].find_all('tr')
+                for row in soup_breweries:
+                    location = row.find('td', {'align': 'right'})
+
+                    output['breweries'].append({
+                        "name": row.a.text,
+                        "url": row.a.get('href'),
+                        "id": re.search(r"/(?P<id>\d*)/", row.a.get('href')).group('id'),
+                        "location": location.text.strip(),
+                    })
+
             elif "beers" in val:
-                beers_loc = idx
+                # find beer information
+                if not soup.find_all(text="0 beers"):
+                    soup_beer_rows = iter(soup_results[index - 1].find_all('tr'))
+                    next(soup_beer_rows)
+                    for row in soup_beer_rows:
+                        link = row.find('td', 'results').a
+                        align_right = row.find_all("td", {'align': 'right'})
 
-        # find brewery information
-        if brewers_loc != None:
-            s_breweries = s_results[brewers_loc-1].find_all('tr')
-            for row in s_breweries:
-                location = row.find('td', {'align': 'right'})
-                output['breweries'].append({
-                    "name": row.a.text,
-                    "url": row.a.get('href'),
-                    "id": re.search(r"/(?P<id>\d*)/", row.a.get('href')).group('id'),
-                    "location": location.text.strip(),
-                })
-
-        # find beer information
-        if beers_loc != None and not soup.find_all(text="0 beers"):
-            s_beer_trs = iter(s_results[beers_loc-1].find_all('tr'))
-            next(s_beer_trs)
-            for row in s_beer_trs:
-                link = row.find('td', 'results').a
-                align_right = row.find_all("td", {'align': 'right'})
-                output['beers'].append({
-                    "name": link.text,
-                    "url": link.get('href'),
-                    "id": re.search(r"/(?P<id>\d*)/", link.get('href')).group('id'),
-                    "rating": align_right[-2].text.strip(),
-                    "num_ratings": align_right[-1].text,
-                })
+                        output['beers'].append({
+                            "name": link.text,
+                            "url": link.get('href'),
+                            "id": re.search(r"/(?P<id>\d*)/", link.get('href')).group('id'),
+                            "rating": align_right[-2].text.strip(),
+                            "num_ratings": align_right[-1].text,
+                        })
         return output
 
     def beer(self, url):
