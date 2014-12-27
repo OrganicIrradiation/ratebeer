@@ -25,7 +25,6 @@
 
 from exceptions import Exception
 import re
-
 import requests
 from bs4 import BeautifulSoup
 
@@ -78,24 +77,31 @@ class RateBeer(object):
         soup = BeautifulSoup(r.text, "lxml")
         s_results = soup.find_all('table', {'class': 'results'})
         output = {"breweries": [], "beers": []}
-        beer_location = 0
+
+        # Locate rows that contain the brewery and beer info
+        brewers_loc = None
+        beers_loc = None
+        for idx, val in enumerate(soup.find_all("h1")):
+            if "brewers" in val:
+                brewers_loc = idx
+            elif "beers" in val:
+                beers_loc = idx
 
         # find brewery information
-        if any("brewers" in s for s in soup.find_all("h1")):
-            s_breweries = s_results[0].find_all('tr')
-            beer_location = 1
+        if brewers_loc != None:
+            s_breweries = s_results[brewers_loc-1].find_all('tr')
             for row in s_breweries:
                 location = row.find('td', {'align': 'right'})
                 output['breweries'].append({
-                    "name": row.a.contents,
+                    "name": row.a.text,
                     "url": row.a.get('href'),
                     "id": re.search(r"/(?P<id>\d*)/", row.a.get('href')).group('id'),
                     "location": location.text.strip(),
                 })
 
         # find beer information
-        if any("beers" in s for s in soup.find_all("h1")) or not soup.find_all(text="0 beers"):
-            s_beer_trs = iter(s_results[beer_location].find_all('tr'))
+        if beers_loc != None and not soup.find_all(text="0 beers"):
+            s_beer_trs = iter(s_results[beers_loc-1].find_all('tr'))
             next(s_beer_trs)
             for row in s_beer_trs:
                 link = row.find('td', 'results').a
@@ -160,7 +166,8 @@ class RateBeer(object):
                         meta_data = float(meta_data)
                     except ValueError:
                         pass
-                    output[keywords[keyword]] = meta_data
+                    if meta_data != '':
+                        output[keywords[keyword]] = meta_data
                     break
 
         info = s_contents_rows[1].tr.find_all('td')
@@ -180,22 +187,25 @@ class RateBeer(object):
         )
 
         name = s_contents_rows[0].find_all('td')[1].h1
-        overall_rating = info[0].find_all('span', itemprop='average')
-        style_rating = info[0].find_all('div')
-        if len(style_rating) < 2:
+        ratings = info[0].findAll('div')
+        if len(ratings) > 1:
+            overall_rating = ratings[1].findAll('span')
+            style_rating = ratings[3].findAll('span')
+        else:
+            overall_rating = None
             style_rating = None
 
         output['name'] = name.text.strip()
-        if overall_rating:
-            output['overall_rating'] = overall_rating[0].text.strip()
-        if style_rating:
-            output['style_rating'] = style_rating[2].div.span.text.strip()
+        if overall_rating and overall_rating[1].text != 'n/a':
+            output['overall_rating'] = int(overall_rating[1].text)
+        if style_rating and style_rating[0].text != 'n/a':
+            output['style_rating'] = int(style_rating[0].text)
         if brewery:
             output['brewery'] = brewery.text.strip()
-            output['brewery_url'] = brewery['href']
+            output['brewery_url'] = brewery.get('href')
         if brewed_at:
             output['brewed_at'] = brewed_at.text.strip()
-            output['brewed_at_url'] = brewed_at['href']
+            output['brewed_at_url'] = brewed_at.get('href')
         if style:
             output['style'] = style.text.strip()
         if 'No commercial description' not in description.text:
