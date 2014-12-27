@@ -6,6 +6,10 @@ Changes
 
 Note that the nature of web scraping means this will be in **perpetual beta.**
 
+###v1.3.5
+
+* Several improvements to results, particularly for edge cases and situations where search results are not in the expected order.
+
 ###v1.3.4
 
 * Metadata for beers returns floats when appropriate.
