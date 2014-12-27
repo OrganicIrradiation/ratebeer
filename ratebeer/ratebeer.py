@@ -153,7 +153,7 @@ class RateBeer(object):
         }
         for meta_name, meta_data in brew_info:
             for keyword in keywords:
-                if keyword in meta_name:
+                if keyword in meta_name and meta_data:
                     if keyword == "MEAN":
                         meta_data = meta_data[:meta_data.find("/")]
                     if keyword == "ABV":
