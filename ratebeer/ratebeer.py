@@ -158,12 +158,13 @@ class RateBeer(object):
                         meta_data = meta_data[:meta_data.find("/")]
                     if keyword == "ABV":
                         meta_data = meta_data[:-1]
+
                     try:
                         meta_data = float(meta_data)
                     except ValueError:
                         pass
-                    if meta_data != '':
-                        output[keywords[keyword]] = meta_data
+
+                    output[keywords[keyword]] = meta_data
                     break
 
         info = s_contents_rows[1].tr.find_all('td')
