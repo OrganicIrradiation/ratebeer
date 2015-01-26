@@ -210,14 +210,12 @@ class RateBeer(object):
             output['description'] = ' '.join([s for s in description.strings]).strip()
         return output
 
-    def reviews(self, url, pages=1, start_page=1, review_order="most recent"):
+    def reviews(self, url, review_order="most recent"):
         """Returns reviews for a specific beer.
 
         Args:
             url (string): The specific url of the beer. Looks like:
                 "/beer/deschutes-inversion-ipa/55610/"
-            pages (int): Number of pages to return. Must be > 0.
-            start_page (int): Which page to begin results. Must be > 0.
             review_order (string): How to sort reviews. Three inputs:
                 most recent: Newer reviews appear earlier.
                 top raters: RateBeer.com top raters appear earlier.
@@ -225,10 +223,9 @@ class RateBeer(object):
                 earlier.
 
         Returns:
-            A list of dictionaries, containing the information about the review.
+            A generator of dictionaries, containing the information about the review.
         """
-        assert pages > 0, "``pages`` must be greater than 0"
-        assert start_page > 0, "``start_page`` must be greater than 0"
+
         review_order = review_order.lower()
         url_codes = {
             "most recent": 1,
@@ -240,12 +237,16 @@ class RateBeer(object):
             raise ValueError("Invalid ``review_order``.")
 
         output = []
-        for page_number in range(start_page, start_page + pages):
+        page_number = 1
+        while True:
             complete_url = "{0}{1}/{2}/".format(url, url_flag, page_number)
             soup = self._get_soup(complete_url)
             content = soup.find('div', id='container').find('table').find_all('tr')[5]
             _ = [x.extract() for x in content.find_all('table')]  # strip ad section
             review_tuples = zip(*[iter(content.find_all('div'))] * 4)  # basically magic
+
+            if len(review_tuples) < 1:
+                raise StopIteration
 
             for review in review_tuples:
                 detail_tuples = zip(*[iter(review[0].find_all(["big", "small"]))] * 2)
@@ -254,9 +255,9 @@ class RateBeer(object):
                     rating.text,
                 ) for (label, rating) in detail_tuples])
 
-                details.update({'text': review[3].text})
-                output.append(details)
-        return output
+                details['text'] = review[3].text.strip()
+                yield details
+            page_number += 1
 
     def brewery(self, url, include_beers=True):
         """Returns information about a specific brewery.
@@ -290,7 +291,7 @@ class RateBeer(object):
         }
 
         if include_beers:
-            output.update({'beers': []})
+            output['beers'] = []
             s_beer_trs = iter(s_contents[8].find('table', 'maintable nohover').find_all('tr'))
             next(s_beer_trs)
             for row in s_beer_trs:
