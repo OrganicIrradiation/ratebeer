@@ -139,6 +139,7 @@ class RateBeer(object):
         if "Also known as " in s_contents_rows[1].find_all('td')[1].div.div.contents:
             raise RateBeer.AliasedBeer(url, s_contents_rows[1].find_all('td')[1].div.div.a['href'])
 
+        brew_url = soup.find('link', rel='canonical')['href'].replace(RateBeer._BASE_URL,'')
         brew_info_row = s_contents_rows[1].find_all('td')[1].div.small
         brew_info = brew_info_row.text.split(u'\xa0\xa0')
         brew_info = [s.split(': ') for s in brew_info]
@@ -193,6 +194,7 @@ class RateBeer(object):
             style_rating = None
 
         output['name'] = name.text.strip()
+        output['url'] = brew_url
         if overall_rating and overall_rating[1].text != 'n/a':
             output['overall_rating'] = int(overall_rating[1].text)
         if style_rating and style_rating[0].text != 'n/a':
