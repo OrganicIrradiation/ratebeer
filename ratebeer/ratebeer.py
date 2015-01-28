@@ -23,6 +23,7 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
+from datetime import datetime
 from exceptions import Exception
 import re
 import requests
@@ -243,21 +244,27 @@ class RateBeer(object):
         while True:
             complete_url = "{0}{1}/{2}/".format(url, url_flag, page_number)
             soup = self._get_soup(complete_url)
-            content = soup.find('div', id='container').find('table').find_all('tr')[5]
-            _ = [x.extract() for x in content.find_all('table')]  # strip ad section
-            review_tuples = zip(*[iter(content.find_all('div'))] * 4)  # basically magic
+            content = soup.find('table', style='padding: 10px;').tr.td
+            reviews = content.find_all('div', style='padding: 0px 0px 0px 0px;')
 
-            if len(review_tuples) < 1:
+            if len(reviews) < 1:
                 raise StopIteration
 
-            for review in review_tuples:
-                detail_tuples = zip(*[iter(review[0].find_all(["big", "small"]))] * 2)
-                details = dict([(
+            for review in reviews:
+                details = {}
+                ratingdetails = review.find_all('div')
+                details['rating'] = float(ratingdetails[1].text)
+                individualratings = zip(*[iter(review.find('strong').find_all(["big", "small"]))]*2)
+                details.update(dict([(
                     label.text.lower().strip().encode("ascii", "ignore"),
                     rating.text,
-                ) for (label, rating) in detail_tuples])
-
-                details['text'] = review[3].text.strip()
+                ) for (label, rating) in individualratings]))
+                userinfo = review.next_sibling
+                details['user_name'] = re.findall(r'(.*?)\xa0\(\d*?\)', userinfo.a.text)[0]
+                details['user_location'] = re.findall(r'-\s(.*?)\s-', userinfo.a.next_sibling)[0]
+                details['date'] = re.findall(r'-\s.*?\s-\s(.*)', userinfo.a.next_sibling)[0]
+                details['date'] = datetime.strptime(details['date'].strip(), '%b %d, %Y').date()
+                details['text'] = userinfo.next_sibling.next_sibling.text.strip()
                 yield details
             page_number += 1
 
