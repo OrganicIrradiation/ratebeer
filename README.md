@@ -1,6 +1,200 @@
 ratebeer.py
 ===========
 
+What is this?
+-------------
+
+[RateBeer](http://www.ratebeer.com/) is a database of user-created reviews about beers and breweries. However, their API has been down for some time, making it difficult to get that information programmatically. This simplifies that process, allowing you to access it in the most painless way possible. Data is returned to you in a friendly, Pythonic way:
+
+```python
+{'beers': [{'id': '61118',
+        'name': u'21st Amendment Summit IPA',
+        'num_ratings': u'4',
+        'rating': u'',
+        'url': '/beer/21st-amendment-summit-ipa/61118/'},
+         {'id': '258783',
+          'name': u'4T\x92s Summit Hoppy',
+          'num_ratings': u'1',
+          'rating': u'',
+          'url': '/beer/4ts-summit-hoppy/258783/'},
+         ....
+         {'id': '170187',
+          'name': u'Maumee Bay Summit Street Pale Ale',
+          'num_ratings': u'3',
+          'rating': u'',
+          'url': '/beer/maumee-bay-summit-street-pale-ale/170187/'
+        }],
+  'breweries': [{'id': '1233',
+            'location': u'St. Paul, Minnesota',
+            'name': [u'Summit Brewing Company'],
+            'url': '/brewers/summit-brewing-company/1233/'},
+           ...
+           {'id': '346',
+            'location': u'Gaithersburg, Maryland',
+            'name': [u'Summit Station Restaurant & Brewery'],
+            'url': '/brewers/summit-station-restaurant-brewery/346/'}
+          ]
+  }
+```
+
+
+Why not BeerAdvocate.com?
+-------------------------
+
+Because they're evil, and they issue takedown notices left and right. We like RateBeer. Scratch that, we **love** RateBeer.
+
+
+Requirements
+------------
+
+Requires [requests](https://pypi.python.org/pypi/requests), [beautifulsoup4](https://pypi.python.org/pypi/beautifulsoup4/4.3.2), and [lxml](https://pypi.python.org/pypi/lxml/3.4.1).
+
+
+Installation
+------------
+Use `pip`:
+
+    pip install ratebeer
+
+Or clone the package:
+
+    git clone https://github.com/alilja/ratebeer.git
+
+
+Usage
+-----
+Because `ratebeer` doesn't use an API, no key is required. Simply:
+
+```python
+from ratebeer import RateBeer
+
+RateBeer().search("summit extra pale ale")
+```
+
+### Methods
+* `search` -- A generic search. A dictionary with two keys: `beers` and `breweries`. Each of those contains a list of dictionaries.
+
+```python
+>>> rb = RateBeer()
+>>> rb.search("summit extra pale ale")
+{'beers': [{'id': '7344',
+   'name': u'Summit Extra Pale Ale',
+   'num_ratings': u'681',
+   'rating': u'72',
+   'url': '/beer/summit-extra-pale-ale/7344/'}],
+ 'breweries': []}
+```
+
+* `beer` -- Returns information about that beer. Now if we were using an API, you'd use an `id` of some variety. Unfortunately, scraping makes things a little more challenging, so as a UUID here, we're using the `url` of the beer.
+
+```python
+>>> rb.beer("/beer/new-belgium-tour-de-fall/279122/")
+{'abv': 6.0,
+ 'brewery': u'New Belgium Brewing Company',
+ 'brewery_url': '/brewers/new-belgium-brewing-company/77/',
+ 'calories': 180.0,
+ 'description': u'New Belgium\x92s love for beer, bikes and benefits is best described by being at Tour de Fat. Our love for Cascade and Amarillo hops is best tasted in our Tour de Fall Pale Ale. We\x92re cruising both across the country during our favorite time of year. Hop on and find Tour de Fall Pale Ale in fall 2014.',
+ 'ibu': 38.0,
+ 'name': u'New Belgium Tour de Fall',
+ 'num_ratings': 248.0,
+ 'overall_rating': 80,
+ 'seasonal': u'Autumn',
+ 'style': u'American Pale Ale',
+ 'style_rating': 78,
+ 'url': '/beer/new-belgium-tour-de-fall/279122/',
+ 'weighted_avg': 3.33}
+```
+
+* `brewery` -- Returns information about the brewery. Takes a `url`, and can include a flag to disable returning the list of beers from that brewery.
+
+```python
+>>> rb.brewery("/brewers/deschutes-brewery/233/")
+{'city': u'Bend',
+ 'country': u'USA',
+ 'name': u'Deschutes Brewery',
+ 'postal_code': u'97702',
+ 'state': u'Oregon',
+ 'street': u'901 SW Simpson Ave',
+ 'type': u'Microbrewery',
+ 'beers': [{'id': '282308',
+            'name': u'Deschutes (Dry-Hopped) Table Beer',
+            'num_ratings': u'1',
+            'rating': u'',
+            'url': '/beer/deschutes-dry-hopped-table-beer/282308/'},
+            ...
+           {'id': '180887',
+            'name': u'Deschutes Zymerge (Low Gluten Beer)',
+            'num_ratings': u'2',
+            'rating': u'',
+            'url': '/beer/deschutes-zymerge-low-gluten-beer/180887/'}]}
+
+>>> rb.brewery("/brewers/summit-brewing-company/1233/",include_beers=False)
+{'city': u'St. Paul',
+ 'country': u'USA',
+ 'name': u'Summit Brewing Company',
+ 'postal_code': u'55102',
+ 'state': u'Minnesota',
+ 'street': u'910 Montreal Circle',
+ 'type': u'Microbrewery'}
+```
+
+* `reviews` -- Returns a generator of dictionaries containing reviews. Requires a `url`, can also take `review_order` ("most recent", "top raters", "highest score"):
+
+```python
+>>> [r for r in rb.reviews("/beer/alchemist-heady-topper/32329/1/118/")]
+[{'appearance': u'5/5',
+  'aroma': u'8/10',
+  'date': datetime.date(2015, 1, 25),
+  'overall': u'19/20',
+  'palate': u'5/5',
+  'rating': 4.7,
+  'taste': u'10/10',
+  'text': u'Poured into a teku glass showing about 5 mm of sparse white foam that quickly dissipates into a hazy dark yellow and some yeast in the beer.\r\n\r\nThe nose shows a lot of pine and cannabis with more tropical and exotic fruit flavors upon warming up slightly. \r\n\r\nThe palate shows a lot of intense, juicy, and ripe pineapple and touches of lemon/lime. The bitterness definitely reaches the sharp IPA bitterness point of 120 IBU fades instantly back into a clean and refreshing fruit shown before. The finish is clean with a slight astringency afterwards.\r\n\r\nThey call this one of the best beers in the US, it\x92s very easy to why.',
+  'user_img': 'http://res.cloudinary.com/ratebeer/image/upload/w_50,c_limit,q_80,d_user_def.gif/user_jc1762.jpg',
+  'user_location': u'Greater London, ENGLAND',
+  'user_name': u'jc1762'},
+ ...
+{'appearance': u'4/5',
+  'aroma': u'9/10',
+  'date': datetime.date(2004, 3, 15),
+  'overall': u'17/20',
+  'palate': u'4/5',
+  'rating': 4.2,
+  'taste': u'8/10',
+  'text': u'UPDATED: SEP 20, 2006 March 2004:  Draught at the brewpub.  Very light golden appearance, almost no head.  Fruit, fruit, fruit in the nose -- oranges, grapefruit, apples.  Very aromatic indeed.  Very sweet, soft at first, with many fruits, brown sugar and a hint of cinnamon, but a massive hop-whallop (120 IBUs) takes over shortly.  Smooth and creamy throughout, low carbonation.  Not at the top for the style, but quite tasty and dangerously drinkable. 8/3/8/4 16 3.9\r\n\r\nSeptember 2006:  This year\x92s edition definitely shows more malt presence in the body,  and the aroma is if anything even more fragrant, fruity and floral with some light touches of berry.  Really coming along, approaching mastery...',
+  'user_img': 'http://res.cloudinary.com/ratebeer/image/upload/w_50,c_limit,q_80,d_user_def.gif/user_muzzlehatch.jpg',
+  'user_location': u'Burlington, Vermont, USA',
+  'user_name': u'muzzlehatch'}]
+```
+
+* `beer_style_list` -- Returns a dictionary containing the beer style name and a link to that page.
+
+```python
+>>> rb.beer_style_list()
+{u'Abbey Dubbel': '/beerstyles/abbey-dubbel/71/',
+ ...
+ u'Zwickel/Keller/Landbier': '/beerstyles/zwickel-keller-landbier/74/'}
+```
+
+* `beer_style` -- A list of dictionaries containing beers from the beer style page. Takes a `url` to a beer style and an optional `sort_type`: `overall` returns the highest-rated beers (default behavior) and `trending` returns, well, the trending beers.
+
+```python
+>>> rb.beer_style("/beerstyles/abbey-dubbel/71/")
+[{'name': u'St. Bernardus Prior 8',
+  'rating': u'3.85',
+  'url': '/beer/st-bernardus-prior-8/2531/'},
+   ...
+ {'name': u'Chama River Demolition Dubbel',
+  'rating': u'3.46',
+  'url': '/beer/chama-river-demolition-dubbel/33903/'}]
+```
+
+
+Tests
+-----
+`ratebeer` uses the standard Python unit testing library.
+
+
 Changes
 -------
 
@@ -43,203 +237,10 @@ Note that the nature of web scraping means this will be in **perpetual beta.**
 * Initial release.
 
 
-What is this?
--------------
-
-[RateBeer](http://www.ratebeer.com/) is a database of user-created reviews about beers and breweries. However, their API has been down for some time, making it difficult to get that information programmatically. This simplifies that process, allowing you to access it in the most painless way possible. Data is returned to you in a friendly, Pythonic way:
-
-    {'beers': [{'id': '61118',
-            'name': u'21st Amendment Summit IPA',
-            'num_ratings': u'4',
-            'rating': u'',
-            'url': '/beer/21st-amendment-summit-ipa/61118/'},
-             {'id': '258783',
-              'name': u'4T\x92s Summit Hoppy',
-              'num_ratings': u'1',
-              'rating': u'',
-              'url': '/beer/4ts-summit-hoppy/258783/'},
-             ....
-             {'id': '170187',
-              'name': u'Maumee Bay Summit Street Pale Ale',
-              'num_ratings': u'3',
-              'rating': u'',
-              'url': '/beer/maumee-bay-summit-street-pale-ale/170187/'
-            }],
-      'breweries': [{'id': '1233',
-                'location': u'St. Paul, Minnesota',
-                'name': [u'Summit Brewing Company'],
-                'url': '/brewers/summit-brewing-company/1233/'},
-               ...
-               {'id': '346',
-                'location': u'Gaithersburg, Maryland',
-                'name': [u'Summit Station Restaurant & Brewery'],
-                'url': '/brewers/summit-station-restaurant-brewery/346/'}
-              ]
-      }
-
-
-Why not BeerAdvocate.com?
--------------------------
-
-Because they're evil, and they issue takedown notices left and right.
-
-
-Requirements
-------------
-
-Requires [Requests](http://docs.python-requests.org/en/latest/) and [Beautiful Soup](http://www.crummy.com/software/BeautifulSoup/) with `lxml`.
-
-
-Installation
-------------
-Use `pip`:
-
-    pip install ratebeer
-
-Or clone the package:
-
-    git clone https://github.com/alilja/ratebeer.git
-
-
-Usage
------
-Because `ratebeer` doesn't use the API, no key is required. Simply:
-
-```python
-from ratebeer import RateBeer
-
-RateBeer().search("summit extra pale ale")
-```
-### Methods
-* `search` -- A generic search. A dictionary with two keys: `beers` and `breweries`. Each of those contains a list of dictionaries.
-
-<pre><code>
-    >>> rb = RateBeer()
-    >>> rb.search("summit extra pale ale")
-    {'beers': [{'name': u'Summit Extra Pale Ale',
-            'num_ratings': <td align="right">678</td>,
-            'rating': <td align="right">73  </td>,
-            'url': u'/beer/summit-extra-pale-ale/7344/'}],
-    'breweries': []}
-</code></pre>
-
-* `beer` -- Returns information about that beer. Now if we were using an API, you'd use an `id` of some variety. Unfortunately, scraping makes things a little more challenging, so as a UUID here, we're using the `url` of the beer.
-
-<pre><code>
-    >>> rb.beer("/beer/new-belgium-tour-de-fall/279122/")
-    {'abv': u'6%',
-     'brewery': u'New Belgium Brewing Company',
-     'brewery_url': '/brewers/new-belgium-brewing-company/77/',
-     'calories': u'180',
-     'ibu': u'38',
-     'name': u'New Belgium Tour de Fall',
-     'num_ratings': u'209',
-     'overall_rating': u'81',
-     'style': u'American Pale Ale',
-     'style_rating': u'78'}
- </code></pre>
-
-* `brewery` -- Returns information about the brewery. Takes a `url`, and can include a flag to disable returning the list of beers from that brewery.
-
-<pre><code>
-    >>> rb.brewery("/brewers/deschutes-brewery/233/")
-    {'city': u'Bend',
-     'country': u'USA',
-     'name': u'Deschutes Brewery',
-     'postal_code': u'97702',
-     'state': u'Oregon',
-     'street': u'901 SW Simpson Ave',
-     'type': u'Microbrewery',
-     'beers': [{'id': '282308',
-                'name': u'Deschutes (Dry-Hopped) Table Beer',
-                'num_ratings': u'1',
-                'rating': u'',
-                'url': '/beer/deschutes-dry-hopped-table-beer/282308/'},
-                ...
-               {'id': '180887',
-                'name': u'Deschutes Zymerge (Low Gluten Beer)',
-                'num_ratings': u'2',
-                'rating': u'',
-                'url': '/beer/deschutes-zymerge-low-gluten-beer/180887/'}]}
-
-    >>> rb.brewery("/brewers/summit-brewing-company/1233/",include_beers=False)
-    {'city': u'St. Paul',
-     'country': u'USA',
-     'name': u'Summit Brewing Company',
-     'postal_code': u'55102',
-     'state': u'Minnesota',
-     'street': u'910 Montreal Circle',
-     'type': u'Microbrewery'}
-</code></pre>
-
-* `reviews` -- Returns a list of dictionaries containing reviews. Requires a `url`, can also take `start_page`, `pages`, or `review_order` ("most recent", "top raters", "highest score"):
-
-<pre><code>
-    >>> rb.reviews("/beer/deschutes-inversion-ipa/55610/")
-    [{'appearance': u'4/5',
-      'aroma': u'7/10',
-      'overall': u'15/20',
-      'palate': u'3/5',
-      'taste': u'8/10',
-      'text': u'Pours copper with a thick off white head that leaves nice lacing in the glass. Aroma is malt and grapefruit. Has medium carbonation the mouth with a bit of a bitter kick on the back end. Good grapefruit bitterness and a tad sweet and malty. This a nice IPA. '},
-      ...
-     {'appearance': u'4/5',
-      'aroma': u'7/10',
-      'overall': u'15/20',
-      'palate': u'3/5',
-      'taste': u'7/10',
-      'text': u'Tasted from bottle. Pours a nice copper color with tan head. Good lacing. Aroma of floral notes, caramel and some toasted malt. Taste is pretty well balanced and sweeter than most IPAs. Caramel, toffee, brown auger malt backbone give it moderate sweetness with some pine and floral flavors giving it a clean consistent moderate bitterness. Above average IPA. \n\n---Rated via Beer Buddy for iPhone '}]
-</code></pre>
-
-<pre><code>
-    >>> rb.reviews("/beer/deschutes-inversion-ipa/55610/", start_page=2, pages=10)
-    [{'appearance': u'4/5',
-      'aroma': u'7/10',
-      'overall': u'15/20',
-      'palate': u'4/5',
-      'taste': u'6/10',
-      'text': u'Pours a brownish amber color with a nice off-white 1 finger head. Aroma of Citrus, pine, caramel, and malt. Orange flavor up front with a nice bitter sweetness, bit of caramel and grapefruit. '},
-     ...
-     {'appearance': u'5/5',
-      'aroma': u'7/10',
-      'overall': u'14/20',
-      'palate': u'4/5',
-      'taste': u'7/10',
-      'text': u'Bottle pour at the Deschutes tasting. Pours a clear amber with a beige head of foam. The aroma is citrussy ang grassy. Taste is fairly bitter with complex layers of tea, earth, citrus, and herbs coming across in waves of bitterness. Medium bodied with medium carbonation. Decent IPA. '}]
-</code></pre>
-
-* `beer_style_list` -- Returns a dictionary containing the beer style name and a link to that page.
-
-<pre><code>
-    >>> rb.beer_style_list()
-    {u'Abbey Dubbel': '/beerstyles/abbey-dubbel/71/',
-     ...
-     u'Zwickel/Keller/Landbier': '/beerstyles/zwickel-keller-landbier/74/'}
-</code></pre>
-
-* `beer_style` -- A list of dictionaries containing the beers from the beer style page. Takes a `url` to a beer style and an optional `sort_type`: `overall` returns the highest-rated beers (default behavior) and `trending` returns, well, the trending beers.
-
-<pre><code>
-    >>> rb.beer_style("/beerstyles/abbey-dubbel/71/")
-    [{'name': u'St. Bernardus Prior 8',
-      'rating': u'3.85',
-      'url': '/beer/st-bernardus-prior-8/2531/'},
-       ...
-     {'name': u'Chama River Demolition Dubbel',
-      'rating': u'3.46',
-      'url': '/beer/chama-river-demolition-dubbel/33903/'}]
-</code></pre>
-
-
-Tests
------
-`ratebeer` uses the standard Python unit testing library.
-
-
 License
 -------
 
 **Author**: Andrew Lilja
+**Contributor**: Steven A. Cholewiak
 
-All code released under [the Unlicense](http://unlicense.org/) (a.k.a. Public
-Domain).
+All code released under [the Unlicense](http://unlicense.org/) (a.k.a. Public Domain).
