@@ -141,30 +141,18 @@ RateBeer().search("summit extra pale ale")
 * `reviews` -- Returns a generator of dictionaries containing reviews. Requires a `url`, can also take `review_order` ("most recent", "top raters", "highest score"):
 
 ```python
->>> [r for r in rb.reviews("/beer/alchemist-heady-topper/32329/1/118/")]
-[{'appearance': u'5/5',
-  'aroma': u'8/10',
-  'date': datetime.date(2015, 1, 25),
-  'overall': u'19/20',
-  'palate': u'5/5',
-  'rating': 4.7,
-  'taste': u'10/10',
-  'text': u'Poured into a teku glass showing about 5 mm of sparse white foam that quickly dissipates into a hazy dark yellow and some yeast in the beer.\r\n\r\nThe nose shows a lot of pine and cannabis with more tropical and exotic fruit flavors upon warming up slightly. \r\n\r\nThe palate shows a lot of intense, juicy, and ripe pineapple and touches of lemon/lime. The bitterness definitely reaches the sharp IPA bitterness point of 120 IBU fades instantly back into a clean and refreshing fruit shown before. The finish is clean with a slight astringency afterwards.\r\n\r\nThey call this one of the best beers in the US, it\x92s very easy to why.',
-  'user_img': 'http://res.cloudinary.com/ratebeer/image/upload/w_50,c_limit,q_80,d_user_def.gif/user_jc1762.jpg',
-  'user_location': u'Greater London, ENGLAND',
-  'user_name': u'jc1762'},
- ...
-{'appearance': u'4/5',
-  'aroma': u'9/10',
-  'date': datetime.date(2004, 3, 15),
-  'overall': u'17/20',
-  'palate': u'4/5',
-  'rating': 4.2,
-  'taste': u'8/10',
-  'text': u'UPDATED: SEP 20, 2006 March 2004:  Draught at the brewpub.  Very light golden appearance, almost no head.  Fruit, fruit, fruit in the nose -- oranges, grapefruit, apples.  Very aromatic indeed.  Very sweet, soft at first, with many fruits, brown sugar and a hint of cinnamon, but a massive hop-whallop (120 IBUs) takes over shortly.  Smooth and creamy throughout, low carbonation.  Not at the top for the style, but quite tasty and dangerously drinkable. 8/3/8/4 16 3.9\r\n\r\nSeptember 2006:  This year\x92s edition definitely shows more malt presence in the body,  and the aroma is if anything even more fragrant, fruity and floral with some light touches of berry.  Really coming along, approaching mastery...',
-  'user_img': 'http://res.cloudinary.com/ratebeer/image/upload/w_50,c_limit,q_80,d_user_def.gif/user_muzzlehatch.jpg',
-  'user_location': u'Burlington, Vermont, USA',
-  'user_name': u'muzzlehatch'}]
+>>> reviews = rb.reviews("/beer/alchemist-heady-topper/32329/1/118/")
+>>> reviews.next()
+{'appearance': u'5/5',
+ 'aroma': u'8/10',
+ 'date': datetime.date(2015, 1, 25),
+ 'overall': u'19/20',
+ 'palate': u'5/5',
+ 'rating': 4.7,
+ 'taste': u'10/10',
+ 'text': u'...',
+ 'user_location': u'Greater London, ENGLAND',
+ 'user_name': u'jc1762'}
 ```
 
 * `beer_style_list` -- Returns a dictionary containing the beer style name and a link to that page.
@@ -241,6 +229,5 @@ License
 -------
 
 **Author**: Andrew Lilja
-**Contributor**: Steven A. Cholewiak
 
 All code released under [the Unlicense](http://unlicense.org/) (a.k.a. Public Domain).
