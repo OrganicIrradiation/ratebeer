@@ -233,6 +233,7 @@ License
 -------
 
 **Contributor**: Andrew Lilja
+
 **Contributor**: Steven A. Cholewiak
 
 All code released under [the Unlicense](http://unlicense.org/) (a.k.a. Public Domain).
