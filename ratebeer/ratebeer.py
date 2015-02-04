@@ -23,6 +23,7 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
+from datetime import datetime
 from exceptions import Exception
 import re
 import requests
@@ -139,6 +140,7 @@ class RateBeer(object):
         if "Also known as " in s_contents_rows[1].find_all('td')[1].div.div.contents:
             raise RateBeer.AliasedBeer(url, s_contents_rows[1].find_all('td')[1].div.div.a['href'])
 
+        brew_url = soup.find('link', rel='canonical')['href'].replace(RateBeer._BASE_URL,'')
         brew_info_row = s_contents_rows[1].find_all('td')[1].div.small
         brew_info = brew_info_row.text.split(u'\xa0\xa0')
         brew_info = [s.split(': ') for s in brew_info]
@@ -193,6 +195,7 @@ class RateBeer(object):
             style_rating = None
 
         output['name'] = name.text.strip()
+        output['url'] = brew_url
         if overall_rating and overall_rating[1].text != 'n/a':
             output['overall_rating'] = int(overall_rating[1].text)
         if style_rating and style_rating[0].text != 'n/a':
@@ -210,14 +213,12 @@ class RateBeer(object):
             output['description'] = ' '.join([s for s in description.strings]).strip()
         return output
 
-    def reviews(self, url, pages=1, start_page=1, review_order="most recent"):
+    def reviews(self, url, review_order="most recent"):
         """Returns reviews for a specific beer.
 
         Args:
             url (string): The specific url of the beer. Looks like:
                 "/beer/deschutes-inversion-ipa/55610/"
-            pages (int): Number of pages to return. Must be > 0.
-            start_page (int): Which page to begin results. Must be > 0.
             review_order (string): How to sort reviews. Three inputs:
                 most recent: Newer reviews appear earlier.
                 top raters: RateBeer.com top raters appear earlier.
@@ -225,10 +226,9 @@ class RateBeer(object):
                 earlier.
 
         Returns:
-            A list of dictionaries, containing the information about the review.
+            A generator of dictionaries, containing the information about the review.
         """
-        assert pages > 0, "``pages`` must be greater than 0"
-        assert start_page > 0, "``start_page`` must be greater than 0"
+
         review_order = review_order.lower()
         url_codes = {
             "most recent": 1,
@@ -240,23 +240,33 @@ class RateBeer(object):
             raise ValueError("Invalid ``review_order``.")
 
         output = []
-        for page_number in range(start_page, start_page + pages):
+        page_number = 1
+        while True:
             complete_url = "{0}{1}/{2}/".format(url, url_flag, page_number)
             soup = self._get_soup(complete_url)
-            content = soup.find('div', id='container').find('table').find_all('tr')[5]
-            _ = [x.extract() for x in content.find_all('table')]  # strip ad section
-            review_tuples = zip(*[iter(content.find_all('div'))] * 4)  # basically magic
+            content = soup.find('table', style='padding: 10px;').tr.td
+            reviews = content.find_all('div', style='padding: 0px 0px 0px 0px;')
 
-            for review in review_tuples:
-                detail_tuples = zip(*[iter(review[0].find_all(["big", "small"]))] * 2)
-                details = dict([(
+            if len(reviews) < 1:
+                raise StopIteration
+
+            for review in reviews:
+                details = {}
+                ratingdetails = review.find_all('div')
+                details['rating'] = float(ratingdetails[1].text)
+                individualratings = zip(*[iter(review.find('strong').find_all(["big", "small"]))]*2)
+                details.update(dict([(
                     label.text.lower().strip().encode("ascii", "ignore"),
                     rating.text,
-                ) for (label, rating) in detail_tuples])
-
-                details.update({'text': review[3].text})
-                output.append(details)
-        return output
+                ) for (label, rating) in individualratings]))
+                userinfo = review.next_sibling
+                details['user_name'] = re.findall(r'(.*?)\xa0\(\d*?\)', userinfo.a.text)[0]
+                details['user_location'] = re.findall(r'-\s(.*?)\s-', userinfo.a.next_sibling)[0]
+                details['date'] = re.findall(r'-\s.*?\s-\s(.*)', userinfo.a.next_sibling)[0]
+                details['date'] = datetime.strptime(details['date'].strip(), '%b %d, %Y').date()
+                details['text'] = userinfo.next_sibling.next_sibling.text.strip()
+                yield details
+            page_number += 1
 
     def brewery(self, url, include_beers=True):
         """Returns information about a specific brewery.
@@ -290,7 +300,7 @@ class RateBeer(object):
         }
 
         if include_beers:
-            output.update({'beers': []})
+            output['beers'] = []
             s_beer_trs = iter(s_contents[8].find('table', 'maintable nohover').find_all('tr'))
             next(s_beer_trs)
             for row in s_beer_trs:
