@@ -140,7 +140,7 @@ class RateBeer(object):
         if "Also known as " in s_contents_rows[1].find_all('td')[1].div.div.contents:
             raise RateBeer.AliasedBeer(url, s_contents_rows[1].find_all('td')[1].div.div.a['href'])
 
-        brew_url = soup.find('link', rel='canonical')['href'].replace(RateBeer._BASE_URL,'')
+        brew_url = soup.find('link', rel='canonical')['href'].replace(RateBeer._BASE_URL, '')
         brew_info_row = s_contents_rows[1].find_all('td')[1].div.small
         brew_info = brew_info_row.text.split(u'\xa0\xa0')
         brew_info = [s.split(': ') for s in brew_info]
@@ -239,7 +239,6 @@ class RateBeer(object):
         if url_flag is None:
             raise ValueError("Invalid ``review_order``.")
 
-        output = []
         page_number = 1
         while True:
             complete_url = "{0}{1}/{2}/".format(url, url_flag, page_number)
@@ -251,21 +250,25 @@ class RateBeer(object):
                 raise StopIteration
 
             for review in reviews:
+                rating_details = review.find_all('div')
+                # gets every second entry in a list
+                individual_ratings = zip(*[iter(review.find('strong').find_all(["big", "small"]))]*2)
+
                 details = {}
-                ratingdetails = review.find_all('div')
-                details['rating'] = float(ratingdetails[1].text)
-                individualratings = zip(*[iter(review.find('strong').find_all(["big", "small"]))]*2)
                 details.update(dict([(
                     label.text.lower().strip().encode("ascii", "ignore"),
                     rating.text,
-                ) for (label, rating) in individualratings]))
+                ) for (label, rating) in individual_ratings]))
                 userinfo = review.next_sibling
+
+                details['rating'] = float(rating_details[1].text)
                 details['user_name'] = re.findall(r'(.*?)\xa0\(\d*?\)', userinfo.a.text)[0]
                 details['user_location'] = re.findall(r'-\s(.*?)\s-', userinfo.a.next_sibling)[0]
                 details['date'] = re.findall(r'-\s.*?\s-\s(.*)', userinfo.a.next_sibling)[0]
                 details['date'] = datetime.strptime(details['date'].strip(), '%b %d, %Y').date()
                 details['text'] = userinfo.next_sibling.next_sibling.text.strip()
                 yield details
+
             page_number += 1
 
     def brewery(self, url, include_beers=True):
