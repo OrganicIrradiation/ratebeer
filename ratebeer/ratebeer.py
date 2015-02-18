@@ -242,7 +242,7 @@ class RateBeer(object):
 
         page_number = 1
         while True:
-            complete_url = "{0}{1}/{2}/".format(url, url_flag, page_number)
+            complete_url = u'{0}{1}/{2}/'.format(url, url_flag, page_number)
             soup = self._get_soup(complete_url)
             content = soup.find('table', style='padding: 10px;').tr.td
             reviews = content.find_all('div', style='padding: 0px 0px 0px 0px;')
@@ -289,7 +289,7 @@ class RateBeer(object):
         def __beers(url):
             page_number = 1
             while True:
-                complete_url = "{0}/0/{1}/".format(url, page_number)
+                complete_url = u'{0}/0/{1}/'.format(url, page_number)
                 soup = self._get_soup(complete_url)
                 s_beer_trs = soup.find('table', 'maintable nohover').findAll('tr')
 
@@ -306,7 +306,7 @@ class RateBeer(object):
                         else:
                             beer_brewery =  output['name']
                             beer_brewery_url =  output['url']
-                            if re.findall(r'/brewers/(.*?)/', row.a['href'])[0] == output['url_name']:
+                            if row.a.text.strip() == output['name']:
                                 beer_brewed_at = u''
                                 beer_brewed_at_url = u''
                             else:
@@ -321,7 +321,7 @@ class RateBeer(object):
                         style_rating = row_data[5].text.strip()
                         num_ratings = row_data[6].text.strip()
                         beer ={}
-                        beer['name'] = link.text
+                        beer['name'] = link.text.strip()
                         beer['url'] = link.get('href')
                         beer['id'] = int(re.search(r"/(?P<id>\d*)/", link.get('href')).group('id'))
                         beer['brewery'] = beer_brewery
