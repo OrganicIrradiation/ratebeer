@@ -26,6 +26,7 @@ class TestSearch(unittest.TestCase):
             'name': u'New Belgium Tour de Fall',
             'brewery': u'New Belgium Brewing Company',
             'brewery_url': u'/brewers/new-belgium-brewing-company/77/',
+            'brewery_country': u'USA',
             'style': u'American Pale Ale',
             'ibu': 38
         }, results)
@@ -36,8 +37,20 @@ class TestSearch(unittest.TestCase):
             'name': u'Deschutes Inversion IPA',
             'brewery': u'Deschutes Brewery',
             'brewery_url': u'/brewers/deschutes-brewery/233/',
+            'brewery_country': u'USA',
             'style': u'India Pale Ale (IPA)',
             'ibu': 80
+        }, results)
+
+        results = RateBeer().beer("/beer/rochefort-trappistes-10/2360/")
+        self.assertIsNotNone(results)
+        self.assertDictContainsSubset({
+            'name': u'Rochefort Trappistes 10',
+            'brewery': u'Brasserie Rochefort',
+            'brewery_url': u'/brewers/brasserie-rochefort/406/',
+            'brewery_country': u'Belgium',
+            'style': u'Abt/Quadrupel',
+            'abv': 11.3
         }, results)
 
     def test_brewery(self):
