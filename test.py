@@ -1,3 +1,5 @@
+#!/usr/local/bin/python
+# coding: utf-8
 import unittest
 
 from ratebeer import RateBeer
@@ -14,6 +16,17 @@ class TestSearch(unittest.TestCase):
             'id': '55610'
         }, results['beers'][0])
 
+        # Test a beer that requires encoding
+        results = RateBeer().search("to øl jule mælk")
+        self.assertListEqual(results['breweries'], [])
+        self.assertIsNotNone(results['beers'])
+        self.assertDictContainsSubset({
+            'url': '/beer/to-ol-jule-maelk/235066/',
+            'name': u'To Øl Jule Mælk',
+            'id': '235066'
+        }, results['beers'][0])
+
+
     def test_beer_404(self):
         rb = RateBeer()
         self.assertRaises(rb.PageNotFound, rb.beer, "/beer/sdfasdf")
@@ -26,6 +39,7 @@ class TestSearch(unittest.TestCase):
             'name': u'New Belgium Tour de Fall',
             'brewery': u'New Belgium Brewing Company',
             'brewery_url': u'/brewers/new-belgium-brewing-company/77/',
+            'brewery_country': u'USA',
             'style': u'American Pale Ale',
             'ibu': 38
         }, results)
@@ -36,8 +50,20 @@ class TestSearch(unittest.TestCase):
             'name': u'Deschutes Inversion IPA',
             'brewery': u'Deschutes Brewery',
             'brewery_url': u'/brewers/deschutes-brewery/233/',
+            'brewery_country': u'USA',
             'style': u'India Pale Ale (IPA)',
             'ibu': 80
+        }, results)
+
+        results = RateBeer().beer("/beer/rochefort-trappistes-10/2360/")
+        self.assertIsNotNone(results)
+        self.assertDictContainsSubset({
+            'name': u'Rochefort Trappistes 10',
+            'brewery': u'Brasserie Rochefort',
+            'brewery_url': u'/brewers/brasserie-rochefort/406/',
+            'brewery_country': u'Belgium',
+            'style': u'Abt/Quadrupel',
+            'abv': 11.3
         }, results)
 
     def test_brewery(self):
