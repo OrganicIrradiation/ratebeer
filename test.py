@@ -1,3 +1,5 @@
+#!/usr/local/bin/python
+# coding: utf-8
 import unittest
 
 from ratebeer import RateBeer
@@ -13,6 +15,17 @@ class TestSearch(unittest.TestCase):
             'name': u'Deschutes Inversion IPA',
             'id': '55610'
         }, results['beers'][0])
+
+        # Test a beer that requires encoding
+        results = RateBeer().search("to øl jule mælk")
+        self.assertListEqual(results['breweries'], [])
+        self.assertIsNotNone(results['beers'])
+        self.assertDictContainsSubset({
+            'url': '/beer/to-ol-jule-maelk/235066/',
+            'name': u'To Øl Jule Mælk',
+            'id': '235066'
+        }, results['beers'][0])
+
 
     def test_beer_404(self):
         rb = RateBeer()

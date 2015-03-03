@@ -73,6 +73,11 @@ class RateBeer(object):
             Each list contains a dictionary of attributes of that brewery or
             beer.
         """
+        if isinstance(query,unicode):
+            query = query.encode('iso-8859-1')
+        else:
+            query = unicode(query,'UTF8').encode('iso-8859-1')
+            
         r = requests.post(RateBeer._BASE_URL + "/findbeer.asp",
                           data={"BeerName": query})
         soup = BeautifulSoup(r.text, "lxml")
