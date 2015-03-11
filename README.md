@@ -7,34 +7,28 @@ What is this?
 [RateBeer](http://www.ratebeer.com/) is a database of user-created reviews about beers and breweries. However, their API has been down for some time, making it difficult to get that information programmatically. This simplifies that process, allowing you to access it in the most painless way possible. Data is returned to you in a friendly, Pythonic way:
 
 ```python
-{'beers': [{'id': '61118',
-        'name': u'21st Amendment Summit IPA',
-        'num_ratings': u'4',
-        'rating': u'',
-        'url': '/beer/21st-amendment-summit-ipa/61118/'},
-         {'id': '258783',
-          'name': u'4T\x92s Summit Hoppy',
-          'num_ratings': u'1',
-          'rating': u'',
-          'url': '/beer/4ts-summit-hoppy/258783/'},
-         ....
-         {'id': '170187',
-          'name': u'Maumee Bay Summit Street Pale Ale',
-          'num_ratings': u'3',
-          'rating': u'',
-          'url': '/beer/maumee-bay-summit-street-pale-ale/170187/'
-        }],
-  'breweries': [{'id': '1233',
+>>> from ratebeer import RateBeer
+>>> rb = RateBeer()
+>>> rb.search('Summit')
+{'beers': [{'id': 61118,
+            'name': u'21st Amendment Summit IPA',
+            'num_ratings': 4,
+            'url': '/beer/21st-amendment-summit-ipa/61118/'},
+            ...
+           {'id': 227196,
+            'name': u'Loch Lomond Southern Summit',
+            'num_ratings': 14,
+            'overall_rating': 69,
+            'url': '/beer/loch-lomond-southern-summit/227196/'}],
+'breweries': [{'id': 1233,
             'location': u'St. Paul, Minnesota',
-            'name': [u'Summit Brewing Company'],
+            'name': u'Summit Brewing Company',
             'url': '/brewers/summit-brewing-company/1233/'},
-           ...
-           {'id': '346',
+            ...
+           {'id': 346,
             'location': u'Gaithersburg, Maryland',
-            'name': [u'Summit Station Restaurant & Brewery'],
-            'url': '/brewers/summit-station-restaurant-brewery/346/'}
-          ]
-  }
+            'name': u'Summit Station Restaurant & Brewery',
+            'url': '/brewers/summit-station-restaurant-brewery/346/'}]}
 ```
 
 
@@ -110,7 +104,7 @@ RateBeer().search("summit extra pale ale")
   'weighted_avg': 3.33}
 ```
 
-* `brewery` -- Returns information about the brewery. Includes a generator that provides information about the breweries beers, even if they span multiple pages
+* `brewery` -- Returns information about the brewery. Includes a 'beer' generator that provides information about the brewery's beers.
 
 ```python
 >>> brewery = rb.brewery("/brewers/deschutes-brewery/233/")
