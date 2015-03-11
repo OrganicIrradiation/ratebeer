@@ -306,6 +306,8 @@ class RateBeer(object):
             while True:
                 complete_url = u'{0}/0/{1}/'.format(url, page_number)
                 soup = self._get_soup(complete_url)
+                beer_brewery = soup.h1.text
+                beer_brewery_url = url
                 s_beer_trs = soup.find('table', 'maintable nohover').findAll('tr')
 
                 if len(s_beer_trs) < 2:
@@ -341,9 +343,8 @@ class RateBeer(object):
                         beer['id'] = int(re.search(r"/(?P<id>\d*)/", link.get('href')).group('id'))
                         beer['brewery'] = beer_brewery
                         beer['brewery_url'] = beer_brewery_url
-                        if len(beer_brewed_at)>0:
+                        if 'beer_brewed_at' in locals() and len(beer_brewed_at)>0:
                             beer['brewed_at'] = beer_brewed_at
-                        if len(beer_brewed_at_url)>0:
                             beer['brewed_at_url'] = beer_brewed_at_url
                         if len(abv)>0:
                             beer['abv'] = float(abv)
@@ -436,6 +437,6 @@ class RateBeer(object):
             output.append({
                 'name': data[1].text,
                 'url': data[1].a.get('href'),
-                'rating': data[4].text
+                'rating': float(data[4].text)
             })
         return output
