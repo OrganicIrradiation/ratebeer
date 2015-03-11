@@ -73,6 +73,11 @@ class RateBeer(object):
             Each list contains a dictionary of attributes of that brewery or
             beer.
         """
+        if isinstance(query,unicode):
+            query = query.encode('iso-8859-1')
+        else:
+            query = unicode(query,'UTF8').encode('iso-8859-1')
+            
         r = requests.post(RateBeer._BASE_URL + "/findbeer.asp",
                           data={"BeerName": query})
         soup = BeautifulSoup(r.text, "lxml")
@@ -179,6 +184,14 @@ class RateBeer(object):
             brewed_at = brewery_info[0].findAll('a')[1]
 
         style = brewery_info[3]
+
+        if ',' in brewery_info[5]:
+            # Non-USA addresses
+            brewery_country = brewery_info[5].split(',')[1]
+        else:
+            # USA addresses
+            brewery_country = brewery_info[8]
+
         description = s_contents_rows[1].find_all('td')[1].find(
             'div', style=(
                 'border: 1px solid #e0e0e0; background: #fff; '
@@ -209,6 +222,8 @@ class RateBeer(object):
             output['brewed_at_url'] = brewed_at.get('href')
         if style:
             output['style'] = style.text.strip()
+        if brewery_country:
+            output['brewery_country'] = brewery_country.strip()
         if 'No commercial description' not in description.text:
             _ = [s.extract() for s in description('small')]
             output['description'] = ' '.join([s for s in description.strings]).strip()
