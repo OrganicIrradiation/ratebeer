@@ -28,9 +28,8 @@ import re
 import requests
 from bs4 import BeautifulSoup
 
-from exceptions import PageNotFound
-from beer import Beer
-
+import beer
+import exceptions
 
 
 class RateBeer(object):
@@ -49,10 +48,13 @@ class RateBeer(object):
     """
     _BASE_URL = "http://www.ratebeer.com"
 
-    def _get_soup(self, url):
+    @staticmethod
+    def _get_soup(url):
+        if RateBeer._BASE_URL in url:
+            url.replace(RateBeer._BASE_URL, '')
         req = requests.get(RateBeer._BASE_URL + url, allow_redirects=True)
         if "ratebeer robot oops" in req.text.lower():
-            raise RateBeer.PageNotFound(url)
+            raise exceptions.PageNotFound(url)
         return BeautifulSoup(req.text, "lxml")
 
     def search(self, query):
@@ -66,7 +68,7 @@ class RateBeer(object):
             Each list contains a dictionary of attributes of that brewery or
             beer.
         """
-        query = unicode(query,'UTF8').encode('iso-8859-1')
+        query = unicode(query, 'UTF8').encode('iso-8859-1')
         if isinstance(query, unicode):
             query = query.encode('iso-8859-1')
 
@@ -145,7 +147,7 @@ class RateBeer(object):
         page_number = 1
         while True:
             complete_url = u'{0}{1}/{2}/'.format(url, url_flag, page_number)
-            soup = self._get_soup(complete_url)
+            soup = RateBeer._get_soup(complete_url)
             content = soup.find('table', style='padding: 10px;').tr.td
             reviews = content.find_all('div', style='padding: 0px 0px 0px 0px;')
 
@@ -192,7 +194,7 @@ class RateBeer(object):
             page_number = 1
             while True:
                 complete_url = u'{0}/0/{1}/'.format(url, page_number)
-                soup = self._get_soup(complete_url)
+                soup = RateBeer._get_soup(complete_url)
                 beer_brewery = soup.h1.text
                 beer_brewery_url = url
                 s_beer_trs = soup.find('table', 'maintable nohover').findAll('tr')
@@ -248,11 +250,11 @@ class RateBeer(object):
                         yield beer
                 page_number += 1
 
-        soup = self._get_soup(url)
+        soup = RateBeer._get_soup(url)
         try:
             s_contents = soup.find('div', id='container').find('table').find_all('tr')[0].find_all('td')
         except AttributeError:
-            raise RateBeer.PageNotFound(url)
+            raise exceptions.PageNotFound(url)
 
         output = dict()
         output['name'] = soup.h1.text
@@ -277,7 +279,7 @@ class RateBeer(object):
         """
         styles = {}
 
-        soup = self._get_soup("/beerstyles/")
+        soup = RateBeer._get_soup("/beerstyles/")
         columns = soup.find_all('table')[2].find_all('td')
         for column in columns:
             lines = [li for li in column.find_all('li')]
@@ -327,3 +329,8 @@ class RateBeer(object):
                 'rating': float(data[4].text)
             })
         return output
+
+
+if __name__ == "__main__":
+    tour = beer.Beer(RateBeer._get_soup("/beer/new-belgium-tour-de-fall/279122/"))
+    print tour.brewery_url
