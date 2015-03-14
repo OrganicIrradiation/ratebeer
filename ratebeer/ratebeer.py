@@ -116,7 +116,11 @@ class RateBeer(object):
                         output['beers'].append(beer)
         return output
 
+    def get_beer(self, url):
+        return beer.Beer(RateBeer._get_soup(url))
 
+    def beer(self, url):
+        return self.get_beer(url).__dict__
 
     def reviews(self, url, review_order="most recent"):
         """Returns reviews for a specific beer.
@@ -332,5 +336,5 @@ class RateBeer(object):
 
 
 if __name__ == "__main__":
-    tour = beer.Beer(RateBeer._get_soup("/beer/new-belgium-tour-de-fall/279122/"))
-    print tour.brewery_url
+    rb = RateBeer()
+    print rb.get_beer("/beer/new-belgium-tour-de-fall/279122/")
