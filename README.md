@@ -7,34 +7,28 @@ What is this?
 [RateBeer](http://www.ratebeer.com/) is a database of user-created reviews about beers and breweries. However, their API has been down for some time, making it difficult to get that information programmatically. This simplifies that process, allowing you to access it in the most painless way possible. Data is returned to you in a friendly, Pythonic way:
 
 ```python
-{'beers': [{'id': '61118',
-        'name': u'21st Amendment Summit IPA',
-        'num_ratings': u'4',
-        'rating': u'',
-        'url': '/beer/21st-amendment-summit-ipa/61118/'},
-         {'id': '258783',
-          'name': u'4T\x92s Summit Hoppy',
-          'num_ratings': u'1',
-          'rating': u'',
-          'url': '/beer/4ts-summit-hoppy/258783/'},
-         ....
-         {'id': '170187',
-          'name': u'Maumee Bay Summit Street Pale Ale',
-          'num_ratings': u'3',
-          'rating': u'',
-          'url': '/beer/maumee-bay-summit-street-pale-ale/170187/'
-        }],
-  'breweries': [{'id': '1233',
+>>> from ratebeer import RateBeer
+>>> rb = RateBeer()
+>>> rb.search('Summit')
+{'beers': [{'id': 61118,
+            'name': u'21st Amendment Summit IPA',
+            'num_ratings': 4,
+            'url': '/beer/21st-amendment-summit-ipa/61118/'},
+            ...
+           {'id': 227196,
+            'name': u'Loch Lomond Southern Summit',
+            'num_ratings': 14,
+            'overall_rating': 69,
+            'url': '/beer/loch-lomond-southern-summit/227196/'}],
+'breweries': [{'id': 1233,
             'location': u'St. Paul, Minnesota',
-            'name': [u'Summit Brewing Company'],
+            'name': u'Summit Brewing Company',
             'url': '/brewers/summit-brewing-company/1233/'},
-           ...
-           {'id': '346',
+            ...
+           {'id': 346,
             'location': u'Gaithersburg, Maryland',
-            'name': [u'Summit Station Restaurant & Brewery'],
-            'url': '/brewers/summit-station-restaurant-brewery/346/'}
-          ]
-  }
+            'name': u'Summit Station Restaurant & Brewery',
+            'url': '/brewers/summit-station-restaurant-brewery/346/'}]}
 ```
 
 
@@ -77,12 +71,16 @@ RateBeer().search("summit extra pale ale")
 ```python
 >>> rb = RateBeer()
 >>> rb.search("summit extra pale ale")
-{'beers': [{'id': '7344',
-   'name': u'Summit Extra Pale Ale',
-   'num_ratings': u'681',
-   'rating': u'72',
-   'url': '/beer/summit-extra-pale-ale/7344/'}],
- 'breweries': []}
+{'beers': [{'id': 7344,
+  'name': u'Summit Extra Pale Ale',
+  'num_ratings': 682,
+  'overall_rating': 72,
+  'url': '/beer/summit-extra-pale-ale/7344/'},
+  {'id': 317841,
+  'name': u'Summit Extra Pale Ale - Rose Petals',
+  'num_ratings': 2,
+  'url': '/beer/summit-extra-pale-ale--rose-petals/317841/'}],
+  'breweries': []}
 ```
 
 * `beer` -- Returns information about that beer. Now if we were using an API, you'd use an `id` of some variety. Unfortunately, scraping makes things a little more challenging, so as a UUID here, we're using the `url` of the beer.
@@ -90,52 +88,48 @@ RateBeer().search("summit extra pale ale")
 ```python
 >>> rb.beer("/beer/new-belgium-tour-de-fall/279122/")
 {'abv': 6.0,
- 'brewery': u'New Belgium Brewing Company',
- 'brewery_url': '/brewers/new-belgium-brewing-company/77/',
- 'calories': 180.0,
- 'description': u'New Belgium\x92s love for beer, bikes and benefits is best described by being at Tour de Fat. Our love for Cascade and Amarillo hops is best tasted in our Tour de Fall Pale Ale. We\x92re cruising both across the country during our favorite time of year. Hop on and find Tour de Fall Pale Ale in fall 2014.',
- 'ibu': 38.0,
- 'name': u'New Belgium Tour de Fall',
- 'num_ratings': 248.0,
- 'overall_rating': 80,
- 'seasonal': u'Autumn',
- 'style': u'American Pale Ale',
- 'style_rating': 78,
- 'url': '/beer/new-belgium-tour-de-fall/279122/',
- 'weighted_avg': 3.33}
+  'brewery': u'New Belgium Brewing Company',
+  'brewery_country': u'USA',
+  'brewery_url': '/brewers/new-belgium-brewing-company/77/',
+  'calories': 180.0,
+  'description': u'New Belgium\x92s love for beer, bikes and benefits is best described by being at Tour de Fat. Our love for Cascade and Amarillo hops is best tasted in our Tour de Fall Pale Ale. We\x92re cruising both across the country during our favorite time of year. Hop on and find Tour de Fall Pale Ale in fall 2014.',
+  'ibu': 38.0,
+  'name': u'New Belgium Tour de Fall',
+  'num_ratings': 254.0,
+  'overall_rating': 80,
+  'seasonal': u'Autumn',
+  'style': u'American Pale Ale',
+  'style_rating': 78,
+  'url': '/beer/new-belgium-tour-de-fall/279122/',
+  'weighted_avg': 3.33}
 ```
 
-* `brewery` -- Returns information about the brewery. Takes a `url`, and can include a flag to disable returning the list of beers from that brewery.
+* `brewery` -- Returns information about the brewery. Includes a 'beer' generator that provides information about the brewery's beers.
 
 ```python
->>> rb.brewery("/brewers/deschutes-brewery/233/")
-{'city': u'Bend',
+>>> brewery = rb.brewery("/brewers/deschutes-brewery/233/")
+>>> print brewery
+{'beers': <generator object __beers at 0x10ce0d730>,
+ 'city': u'Bend',
  'country': u'USA',
  'name': u'Deschutes Brewery',
  'postal_code': u'97702',
  'state': u'Oregon',
  'street': u'901 SW Simpson Ave',
- 'type': u'Microbrewery',
- 'beers': [{'id': '282308',
-            'name': u'Deschutes (Dry-Hopped) Table Beer',
-            'num_ratings': u'1',
-            'rating': u'',
-            'url': '/beer/deschutes-dry-hopped-table-beer/282308/'},
-            ...
-           {'id': '180887',
-            'name': u'Deschutes Zymerge (Low Gluten Beer)',
-            'num_ratings': u'2',
-            'rating': u'',
-            'url': '/beer/deschutes-zymerge-low-gluten-beer/180887/'}]}
-
->>> rb.brewery("/brewers/summit-brewing-company/1233/",include_beers=False)
-{'city': u'St. Paul',
- 'country': u'USA',
- 'name': u'Summit Brewing Company',
- 'postal_code': u'55102',
- 'state': u'Minnesota',
- 'street': u'910 Montreal Circle',
- 'type': u'Microbrewery'}
+ 'type': 'Microbrewery',
+ 'url': '/brewers/deschutes-brewery/233/',
+ 'url_name': 'deschutes-brewery'}
+>>> brewery['beers'].next()
+{'abv': 6.5,
+ 'brewery': u'Deschutes Brewery',
+ 'brewery_url': '/brewers/deschutes-brewery/233/',
+ 'id': 176946,
+ 'name': u'Deschutes / Hopworks India Red Lager',
+ 'num_ratings': 12,
+ 'overall_rating': 85,
+ 'style_rating': 99,
+ 'url': '/beer/deschutes--hopworks-india-red-lager/176946/',
+ 'weighted_avg': 3.37}
 ```
 
 * `reviews` -- Returns a generator of dictionaries containing reviews. Requires a `url`, can also take `review_order` ("most recent", "top raters", "highest score"):
@@ -143,16 +137,16 @@ RateBeer().search("summit extra pale ale")
 ```python
 >>> reviews = rb.reviews("/beer/alchemist-heady-topper/32329/1/118/")
 >>> reviews.next()
-{'appearance': u'5/5',
- 'aroma': u'8/10',
- 'date': datetime.date(2015, 1, 25),
+{'appearance': u'3/5',
+ 'aroma': u'9/10',
+ 'date': datetime.date(2010, 9, 26),
  'overall': u'19/20',
- 'palate': u'5/5',
- 'rating': 4.7,
- 'taste': u'10/10',
+ 'palate': u'3/5',
+ 'rating': 4.3,
+ 'taste': u'9/10',
  'text': u'...',
- 'user_location': u'Greater London, ENGLAND',
- 'user_name': u'jc1762'}
+ 'user_location': u'Montreal, Quebec, CANADA',
+ 'user_name': u'MJGG'}
 ```
 
 * `beer_style_list` -- Returns a dictionary containing the beer style name and a link to that page.
@@ -169,11 +163,14 @@ RateBeer().search("summit extra pale ale")
 ```python
 >>> rb.beer_style("/beerstyles/abbey-dubbel/71/")
 [{'name': u'St. Bernardus Prior 8',
-  'rating': u'3.85',
+  'rating': 3.85,
   'url': '/beer/st-bernardus-prior-8/2531/'},
+ {'name': u'Westmalle Dubbel',
+  'rating': 3.84,
+  'url': '/beer/westmalle-dubbel/2205/'},
    ...
  {'name': u'Chama River Demolition Dubbel',
-  'rating': u'3.46',
+  'rating': 3.46,
   'url': '/beer/chama-river-demolition-dubbel/33903/'}]
 ```
 
@@ -232,7 +229,7 @@ Note that the nature of web scraping means this will be in **perpetual beta.**
 License
 -------
 
-**Contributor**: Andrew Lilja
+**Creator**: Andrew Lilja
 
 **Contributor**: Steven A. Cholewiak
 

@@ -95,7 +95,7 @@ class RateBeer(object):
                     output['breweries'].append({
                         "name": row.a.text,
                         "url": row.a.get('href'),
-                        "id": re.search(r"/(?P<id>\d*)/", row.a.get('href')).group('id'),
+                        "id": int(re.search(r"/(?P<id>\d*)/", row.a.get('href')).group('id')),
                         "location": location.text.strip(),
                     })
 
@@ -106,15 +106,18 @@ class RateBeer(object):
                     next(soup_beer_rows)
                     for row in soup_beer_rows:
                         link = row.find('td', 'results').a
-                        align_right = row.find_all("td", {'align': 'right'})
-
-                        output['beers'].append({
-                            "name": link.text,
-                            "url": link.get('href'),
-                            "id": re.search(r"/(?P<id>\d*)/", link.get('href')).group('id'),
-                            "rating": align_right[-2].text.strip(),
-                            "num_ratings": align_right[-1].text,
-                        })
+                        row_data = row.findAll('td')
+                        overall_rating = row_data[3].text.strip()
+                        num_ratings = row_data[4].text.strip()
+                        beer ={}
+                        beer['name'] = link.text
+                        beer['url'] = link.get('href')
+                        beer['id'] = int(re.search(r"/(?P<id>\d*)/", link.get('href')).group('id'))
+                        if len(overall_rating)>0:
+                            beer['overall_rating'] = int(overall_rating)
+                        if len(num_ratings)>0:
+                            beer['num_ratings'] = int(num_ratings)
+                        output['beers'].append(beer)
         return output
 
     def beer(self, url):
@@ -165,12 +168,10 @@ class RateBeer(object):
                         meta_data = meta_data[:meta_data.find("/")]
                     if keyword == "ABV":
                         meta_data = meta_data[:-1]
-
                     try:
                         meta_data = float(meta_data)
                     except ValueError:
                         pass
-
                     output[keywords[keyword]] = meta_data
                     break
 
@@ -179,7 +180,7 @@ class RateBeer(object):
         brewery_info = info[1].find('div').contents
         brewery = brewery_info[0].findAll('a')[0]
         brewed_at = None
-        if 'Brewed at' in brewery_info[0].text:
+        if 'brewed at' in brewery_info[0].text.lower():
             brewed_at = brewery_info[0].findAll('a')[1]
 
         style = brewery_info[3]
@@ -256,7 +257,7 @@ class RateBeer(object):
 
         page_number = 1
         while True:
-            complete_url = "{0}{1}/{2}/".format(url, url_flag, page_number)
+            complete_url = u'{0}{1}/{2}/'.format(url, url_flag, page_number)
             soup = self._get_soup(complete_url)
             content = soup.find('table', style='padding: 10px;').tr.td
             reviews = content.find_all('div', style='padding: 0px 0px 0px 0px;')
@@ -286,7 +287,7 @@ class RateBeer(object):
 
             page_number += 1
 
-    def brewery(self, url, include_beers=True):
+    def brewery(self, url):
         """Returns information about a specific brewery.
 
         Args:
@@ -300,37 +301,85 @@ class RateBeer(object):
             output = output.text if output else None
             return output
 
+        def __beers(url):
+            page_number = 1
+            while True:
+                complete_url = u'{0}/0/{1}/'.format(url, page_number)
+                soup = self._get_soup(complete_url)
+                beer_brewery = soup.h1.text
+                beer_brewery_url = url
+                s_beer_trs = soup.find('table', 'maintable nohover').findAll('tr')
+
+                if len(s_beer_trs) < 2:
+                    raise StopIteration
+
+                for row in s_beer_trs[1:]:
+                    if 'Brewed at ' in row.text:
+                        if 'by/for' in row.text:
+                            beer_brewery = row.a.text.strip()
+                            beer_brewery_url = row.a['href']
+                            beer_brewed_at =  output['name']
+                            beer_brewed_at_url = output['url']
+                        else:
+                            beer_brewery =  output['name']
+                            beer_brewery_url =  output['url']
+                            if row.a.text.strip() == output['name']:
+                                beer_brewed_at = u''
+                                beer_brewed_at_url = u''
+                            else:
+                                beer_brewed_at = row.a.text.strip()
+                                beer_brewed_at_url = row.a['href']
+                    elif len(row.findAll('a', class_='rate')) > 0 :
+                        link = row.a
+                        row_data = row.findAll('td')
+                        abv = row_data[2].text.strip()
+                        weighted_avg = row_data[3].text.strip()
+                        overall_rating = row_data[4].text.strip()
+                        style_rating = row_data[5].text.strip()
+                        num_ratings = row_data[6].text.strip()
+                        beer ={}
+                        beer['name'] = link.text.strip()
+                        beer['url'] = link.get('href')
+                        beer['id'] = int(re.search(r"/(?P<id>\d*)/", link.get('href')).group('id'))
+                        beer['brewery'] = beer_brewery
+                        beer['brewery_url'] = beer_brewery_url
+                        if 'beer_brewed_at' in locals() and len(beer_brewed_at)>0:
+                            beer['brewed_at'] = beer_brewed_at
+                            beer['brewed_at_url'] = beer_brewed_at_url
+                        if len(abv)>0:
+                            beer['abv'] = float(abv)
+                        if len(abv)>0:
+                            beer['abv'] = float(abv)
+                        if len(weighted_avg)>0:
+                            beer['weighted_avg'] = float(weighted_avg)
+                        if len(overall_rating)>0:
+                            beer['overall_rating'] = int(overall_rating)
+                        if len(style_rating)>0:
+                            beer['style_rating'] = int(style_rating)
+                        if len(num_ratings)>0:
+                            beer['num_ratings'] = int(num_ratings)
+                        yield beer
+                page_number += 1
+
         soup = self._get_soup(url)
         try:
             s_contents = soup.find('div', id='container').find('table').find_all('tr')[0].find_all('td')
         except AttributeError:
             raise RateBeer.PageNotFound(url)
 
-        output = {
-            'name': s_contents[8].h1.text,
-            'type': re.search(r"Type: +(?P<type>[^ ]+)",
-                              s_contents[8].find_all('span', 'beerfoot')[1].text).group('type'),
-            'street': _find_span(s_contents[0], 'streetAddress'),
-            'city': _find_span(s_contents[0], 'addressLocality'),
-            'state': _find_span(s_contents[0], 'addressRegion'),
-            'country': _find_span(s_contents[0], 'addressCountry'),
-            'postal_code': _find_span(s_contents[0], 'postalCode'),
-        }
+        output = dict()
+        output['name'] = soup.h1.text
+        output['url'] = url
+        output['url_name'] = re.findall(r'/brewers/(.*?)/', url)[0]
+        output['type'] = re.findall(r'Type: (.*?)<br\/>', soup.renderContents())[0]
+        output['street'] = _find_span(s_contents[0], 'streetAddress')
+        output['city'] = _find_span(s_contents[0], 'addressLocality')
+        output['state'] = _find_span(s_contents[0], 'addressRegion')
+        output['country'] = _find_span(s_contents[0], 'addressCountry')
+        output['postal_code'] = _find_span(s_contents[0], 'postalCode')
+        output = dict((k, v.strip()) for k, v in output.iteritems() if v)
+        output['beers'] = __beers(url)
 
-        if include_beers:
-            output['beers'] = []
-            s_beer_trs = iter(s_contents[8].find('table', 'maintable nohover').find_all('tr'))
-            next(s_beer_trs)
-            for row in s_beer_trs:
-                if len(row.find_all('td')) > 1:
-                    beer = {
-                        'name': row.a.text,
-                        'url': row.a.get('href'),
-                        'id': re.search(r"/(?P<id>\d*)/", row.a.get('href')).group('id'),
-                        'rating': row.find_all('td')[4].text.strip(),
-                        'num_ratings': row.find_all('td')[6].text.strip(),
-                    }
-                    output['beers'].append(beer)
         return output
 
     def beer_style_list(self):
@@ -388,6 +437,6 @@ class RateBeer(object):
             output.append({
                 'name': data[1].text,
                 'url': data[1].a.get('href'),
-                'rating': data[4].text
+                'rating': float(data[4].text)
             })
         return output
