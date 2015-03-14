@@ -117,7 +117,7 @@ class RateBeer(object):
         return output
 
     def get_beer(self, url):
-        return beer.Beer(RateBeer._get_soup(url), url)
+        return models.Beer(RateBeer._get_soup(url), url)
 
     def beer(self, url):
         return self.get_beer(url).__dict__
@@ -154,108 +154,19 @@ class RateBeer(object):
             soup = RateBeer._get_soup(complete_url)
             content = soup.find('table', style='padding: 10px;').tr.td
             reviews = content.find_all('div', style='padding: 0px 0px 0px 0px;')
-
             if len(reviews) < 1:
                 raise StopIteration
 
             for review_soup in reviews:
                 yield models.Review(review_soup)
+
             page_number += 1
 
+    def get_brewery(self, url):
+        return models.Brewery(url)
+
     def brewery(self, url):
-        """Returns information about a specific brewery.
-
-        Args:
-            url (string): The specific url of the beer. Looks like:
-                "/brewers/new-belgium-brewing-company/77/"
-
-        Returns:
-            A dictionary of attributes about that brewery."""
-        def _find_span(search_soup, item_prop):
-            output = search_soup.find('span', attrs={'itemprop': item_prop})
-            output = output.text if output else None
-            return output
-
-        def __beers(url):
-            page_number = 1
-            while True:
-                complete_url = u'{0}/0/{1}/'.format(url, page_number)
-                soup = RateBeer._get_soup(complete_url)
-                beer_brewery = soup.h1.text
-                beer_brewery_url = url
-                s_beer_trs = soup.find('table', 'maintable nohover').findAll('tr')
-
-                if len(s_beer_trs) < 2:
-                    raise StopIteration
-
-                for row in s_beer_trs[1:]:
-                    if 'Brewed at ' in row.text:
-                        if 'by/for' in row.text:
-                            beer_brewery = row.a.text.strip()
-                            beer_brewery_url = row.a['href']
-                            beer_brewed_at =  output['name']
-                            beer_brewed_at_url = output['url']
-                        else:
-                            beer_brewery =  output['name']
-                            beer_brewery_url =  output['url']
-                            if row.a.text.strip() == output['name']:
-                                beer_brewed_at = u''
-                                beer_brewed_at_url = u''
-                            else:
-                                beer_brewed_at = row.a.text.strip()
-                                beer_brewed_at_url = row.a['href']
-                    elif len(row.findAll('a', class_='rate')) > 0 :
-                        link = row.a
-                        row_data = row.findAll('td')
-                        abv = row_data[2].text.strip()
-                        weighted_avg = row_data[3].text.strip()
-                        overall_rating = row_data[4].text.strip()
-                        style_rating = row_data[5].text.strip()
-                        num_ratings = row_data[6].text.strip()
-                        beer ={}
-                        beer['name'] = link.text.strip()
-                        beer['url'] = link.get('href')
-                        beer['id'] = int(re.search(r"/(?P<id>\d*)/", link.get('href')).group('id'))
-                        beer['brewery'] = beer_brewery
-                        beer['brewery_url'] = beer_brewery_url
-                        if 'beer_brewed_at' in locals() and len(beer_brewed_at)>0:
-                            beer['brewed_at'] = beer_brewed_at
-                            beer['brewed_at_url'] = beer_brewed_at_url
-                        if len(abv)>0:
-                            beer['abv'] = float(abv)
-                        if len(abv)>0:
-                            beer['abv'] = float(abv)
-                        if len(weighted_avg)>0:
-                            beer['weighted_avg'] = float(weighted_avg)
-                        if len(overall_rating)>0:
-                            beer['overall_rating'] = int(overall_rating)
-                        if len(style_rating)>0:
-                            beer['style_rating'] = int(style_rating)
-                        if len(num_ratings)>0:
-                            beer['num_ratings'] = int(num_ratings)
-                        yield beer
-                page_number += 1
-
-        soup = RateBeer._get_soup(url)
-        try:
-            s_contents = soup.find('div', id='container').find('table').find_all('tr')[0].find_all('td')
-        except AttributeError:
-            raise rb_exceptions.PageNotFound(url)
-
-        output = dict()
-        output['name'] = soup.h1.text
-        output['url'] = url
-        output['url_name'] = re.findall(r'/brewers/(.*?)/', url)[0]
-        output['type'] = re.findall(r'Type: (.*?)<br\/>', soup.renderContents())[0]
-        output['street'] = _find_span(s_contents[0], 'streetAddress')
-        output['city'] = _find_span(s_contents[0], 'addressLocality')
-        output['state'] = _find_span(s_contents[0], 'addressRegion')
-        output['country'] = _find_span(s_contents[0], 'addressCountry')
-        output['postal_code'] = _find_span(s_contents[0], 'postalCode')
-        output = dict((k, v.strip()) for k, v in output.iteritems() if v)
-        output['beers'] = __beers(url)
-
-        return output
+        return self.get_brewery(url).__dict__
 
     def beer_style_list(self):
         """Returns the list of beer styles from the beer styles page.
@@ -319,6 +230,7 @@ class RateBeer(object):
 
 if __name__ == "__main__":
     rb = RateBeer()
-    reviews = rb.reviews("/beer/new-belgium-tour-de-fall/279122/")
+    brewery = rb.get_brewery("/brewers/deschutes-brewery/233/")
+    beers = brewery.get_beers()
     for i in range(10):
-        print reviews.next()
+        print beers.next()
