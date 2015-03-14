@@ -28,8 +28,8 @@ import re
 import requests
 from bs4 import BeautifulSoup
 
-import beer
-import exceptions
+import models
+import rb_exceptions
 
 
 class RateBeer(object):
@@ -54,7 +54,7 @@ class RateBeer(object):
             url.replace(RateBeer._BASE_URL, '')
         req = requests.get(RateBeer._BASE_URL + url, allow_redirects=True)
         if "ratebeer robot oops" in req.text.lower():
-            raise exceptions.PageNotFound(url)
+            raise rb_exceptions.PageNotFound(url)
         return BeautifulSoup(req.text, "lxml")
 
     def search(self, query):
@@ -117,7 +117,7 @@ class RateBeer(object):
         return output
 
     def get_beer(self, url):
-        return beer.Beer(RateBeer._get_soup(url))
+        return beer.Beer(RateBeer._get_soup(url), url)
 
     def beer(self, url):
         return self.get_beer(url).__dict__
@@ -145,7 +145,7 @@ class RateBeer(object):
             "highest score": 3
         }
         url_flag = url_codes.get(review_order)
-        if url_flag is None:
+        if not url_flag:
             raise ValueError("Invalid ``review_order``.")
 
         page_number = 1
@@ -158,26 +158,8 @@ class RateBeer(object):
             if len(reviews) < 1:
                 raise StopIteration
 
-            for review in reviews:
-                rating_details = review.find_all('div')
-                # gets every second entry in a list
-                individual_ratings = zip(*[iter(review.find('strong').find_all(["big", "small"]))]*2)
-
-                details = {}
-                details.update(dict([(
-                    label.text.lower().strip().encode("ascii", "ignore"),
-                    rating.text,
-                ) for (label, rating) in individual_ratings]))
-                userinfo = review.next_sibling
-
-                details['rating'] = float(rating_details[1].text)
-                details['user_name'] = re.findall(r'(.*?)\xa0\(\d*?\)', userinfo.a.text)[0]
-                details['user_location'] = re.findall(r'-\s(.*?)\s-', userinfo.a.next_sibling)[0]
-                details['date'] = re.findall(r'-\s.*?\s-\s(.*)', userinfo.a.next_sibling)[0]
-                details['date'] = datetime.strptime(details['date'].strip(), '%b %d, %Y').date()
-                details['text'] = userinfo.next_sibling.next_sibling.text.strip()
-                yield details
-
+            for review_soup in reviews:
+                yield models.Review(review_soup)
             page_number += 1
 
     def brewery(self, url):
@@ -258,7 +240,7 @@ class RateBeer(object):
         try:
             s_contents = soup.find('div', id='container').find('table').find_all('tr')[0].find_all('td')
         except AttributeError:
-            raise exceptions.PageNotFound(url)
+            raise rb_exceptions.PageNotFound(url)
 
         output = dict()
         output['name'] = soup.h1.text
@@ -337,4 +319,6 @@ class RateBeer(object):
 
 if __name__ == "__main__":
     rb = RateBeer()
-    print rb.get_beer("/beer/new-belgium-tour-de-fall/279122/")
+    reviews = rb.reviews("/beer/new-belgium-tour-de-fall/279122/")
+    for i in range(10):
+        print reviews.next()
