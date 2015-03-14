@@ -24,10 +24,13 @@
 # For more information, please refer to <http://unlicense.org/>
 
 from datetime import datetime
-from exceptions import Exception
 import re
 import requests
 from bs4 import BeautifulSoup
+
+from exceptions import PageNotFound
+from beer import Beer
+
 
 
 class RateBeer(object):
@@ -46,16 +49,6 @@ class RateBeer(object):
     """
     _BASE_URL = "http://www.ratebeer.com"
 
-    class PageNotFound(Exception):
-        """Returns the URL of the page not found."""
-        pass
-
-    class AliasedBeer(Exception):
-        """Returns the old and new urls for an aliased beer."""
-        def __init__(self, oldurl, newurl):
-            self.oldurl = oldurl
-            self.newurl = newurl
-
     def _get_soup(self, url):
         req = requests.get(RateBeer._BASE_URL + url, allow_redirects=True)
         if "ratebeer robot oops" in req.text.lower():
@@ -73,14 +66,15 @@ class RateBeer(object):
             Each list contains a dictionary of attributes of that brewery or
             beer.
         """
-        if isinstance(query,unicode):
+        query = unicode(query,'UTF8').encode('iso-8859-1')
+        if isinstance(query, unicode):
             query = query.encode('iso-8859-1')
-        else:
-            query = unicode(query,'UTF8').encode('iso-8859-1')
-            
-        r = requests.post(RateBeer._BASE_URL + "/findbeer.asp",
-                          data={"BeerName": query})
-        soup = BeautifulSoup(r.text, "lxml")
+
+        request = requests.post(
+            RateBeer._BASE_URL + "/findbeer.asp",
+            data={"BeerName": query}
+        )
+        soup = BeautifulSoup(request.text, "lxml")
         soup_results = soup.find_all('table', {'class': 'results'})
         output = {"breweries": [], "beers": []}
 
@@ -109,125 +103,18 @@ class RateBeer(object):
                         row_data = row.findAll('td')
                         overall_rating = row_data[3].text.strip()
                         num_ratings = row_data[4].text.strip()
-                        beer ={}
+                        beer = {}
                         beer['name'] = link.text
                         beer['url'] = link.get('href')
                         beer['id'] = int(re.search(r"/(?P<id>\d*)/", link.get('href')).group('id'))
-                        if len(overall_rating)>0:
+                        if len(overall_rating) > 0:
                             beer['overall_rating'] = int(overall_rating)
-                        if len(num_ratings)>0:
+                        if len(num_ratings) > 0:
                             beer['num_ratings'] = int(num_ratings)
                         output['beers'].append(beer)
         return output
 
-    def beer(self, url):
-        """Returns information about a specific beer.
 
-        Args:
-            url (string): The specific url of the beer. Looks like:
-                "/beer/deschutes-inversion-ipa/55610/"
-
-        Returns:
-            A dictionary of attributes about that beer."""
-        soup = self._get_soup(url)
-        output = {}
-
-        # check for 404s
-        try:
-            s_contents_rows = soup.find('div', id='container').find('table').find_all('tr')
-        except AttributeError:
-            raise RateBeer.PageNotFound(url)
-        # ratebeer pages don't actually 404, they just send you to this weird
-        # "beer reference" page but the url doesn't actually change, it just
-        # seems like it's all getting done server side -- so we have to look
-        # for the contents h1 to see if we're looking at the beer reference or
-        # not
-        if "beer reference" in s_contents_rows[0].find_all('td')[1].h1.contents:
-            raise RateBeer.PageNotFound(url)
-
-        if "Also known as " in s_contents_rows[1].find_all('td')[1].div.div.contents:
-            raise RateBeer.AliasedBeer(url, s_contents_rows[1].find_all('td')[1].div.div.a['href'])
-
-        brew_url = soup.find('link', rel='canonical')['href'].replace(RateBeer._BASE_URL, '')
-        brew_info_row = s_contents_rows[1].find_all('td')[1].div.small
-        brew_info = brew_info_row.text.split(u'\xa0\xa0')
-        brew_info = [s.split(': ') for s in brew_info]
-        keywords = {
-            "RATINGS": "num_ratings",
-            "MEAN": "mean",
-            "WEIGHTED AVG": "weighted_avg",
-            "SEASONAL": "seasonal",
-            "CALORIES": "calories",
-            "ABV": "abv",
-            "IBU": "ibu",
-        }
-        for meta_name, meta_data in brew_info:
-            for keyword in keywords:
-                if keyword in meta_name and meta_data:
-                    if keyword == "MEAN":
-                        meta_data = meta_data[:meta_data.find("/")]
-                    if keyword == "ABV":
-                        meta_data = meta_data[:-1]
-                    try:
-                        meta_data = float(meta_data)
-                    except ValueError:
-                        pass
-                    output[keywords[keyword]] = meta_data
-                    break
-
-        info = s_contents_rows[1].tr.find_all('td')
-
-        brewery_info = info[1].find('div').contents
-        brewery = brewery_info[0].findAll('a')[0]
-        brewed_at = None
-        if 'brewed at' in brewery_info[0].text.lower():
-            brewed_at = brewery_info[0].findAll('a')[1]
-
-        style = brewery_info[3]
-
-        if ',' in brewery_info[5]:
-            # Non-USA addresses
-            brewery_country = brewery_info[5].split(',')[1]
-        else:
-            # USA addresses
-            brewery_country = brewery_info[8]
-
-        description = s_contents_rows[1].find_all('td')[1].find(
-            'div', style=(
-                'border: 1px solid #e0e0e0; background: #fff; '
-                'padding: 14px; color: #777;'
-            )
-        )
-
-        name = s_contents_rows[0].find_all('td')[1].h1
-        ratings = info[0].findAll('div')
-        if len(ratings) > 1:
-            overall_rating = ratings[1].findAll('span')
-            style_rating = ratings[3].findAll('span')
-        else:
-            overall_rating = None
-            style_rating = None
-
-        output['name'] = name.text.strip()
-        output['url'] = brew_url
-        if overall_rating and overall_rating[1].text != 'n/a':
-            output['overall_rating'] = int(overall_rating[1].text)
-        if style_rating and style_rating[0].text != 'n/a':
-            output['style_rating'] = int(style_rating[0].text)
-        if brewery:
-            output['brewery'] = brewery.text.strip()
-            output['brewery_url'] = brewery.get('href')
-        if brewed_at:
-            output['brewed_at'] = brewed_at.text.strip()
-            output['brewed_at_url'] = brewed_at.get('href')
-        if style:
-            output['style'] = style.text.strip()
-        if brewery_country:
-            output['brewery_country'] = brewery_country.strip()
-        if 'No commercial description' not in description.text:
-            _ = [s.extract() for s in description('small')]
-            output['description'] = ' '.join([s for s in description.strings]).strip()
-        return output
 
     def reviews(self, url, review_order="most recent"):
         """Returns reviews for a specific beer.
