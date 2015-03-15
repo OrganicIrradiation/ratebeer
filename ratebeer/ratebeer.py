@@ -122,46 +122,6 @@ class RateBeer(object):
     def beer(self, url):
         return self.get_beer(url).__dict__
 
-    def reviews(self, url, review_order="most recent"):
-        """Returns reviews for a specific beer.
-
-        Args:
-            url (string): The specific url of the beer. Looks like:
-                "/beer/deschutes-inversion-ipa/55610/"
-            review_order (string): How to sort reviews. Three inputs:
-                most recent: Newer reviews appear earlier.
-                top raters: RateBeer.com top raters appear earlier.
-                highest score: Reviews with the highest overall score appear
-                earlier.
-
-        Returns:
-            A generator of dictionaries, containing the information about the review.
-        """
-
-        review_order = review_order.lower()
-        url_codes = {
-            "most recent": 1,
-            "top raters": 2,
-            "highest score": 3
-        }
-        url_flag = url_codes.get(review_order)
-        if not url_flag:
-            raise ValueError("Invalid ``review_order``.")
-
-        page_number = 1
-        while True:
-            complete_url = u'{0}{1}/{2}/'.format(url, url_flag, page_number)
-            soup = RateBeer._get_soup(complete_url)
-            content = soup.find('table', style='padding: 10px;').tr.td
-            reviews = content.find_all('div', style='padding: 0px 0px 0px 0px;')
-            if len(reviews) < 1:
-                raise StopIteration
-
-            for review_soup in reviews:
-                yield models.Review(review_soup)
-
-            page_number += 1
-
     def get_brewery(self, url):
         return models.Brewery(url)
 
@@ -230,7 +190,7 @@ class RateBeer(object):
 
 if __name__ == "__main__":
     rb = RateBeer()
-    brewery = rb.get_brewery("/brewers/deschutes-brewery/233/")
-    beers = brewery.get_beers()
+    beer = rb.get_beer("/beer/summit-extra-pale-ale/7344/")
+    reviews = beer.get_reviews()
     for i in range(10):
-        print beers.next()
+        print reviews.next().__dict__

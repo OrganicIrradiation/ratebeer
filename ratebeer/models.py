@@ -109,13 +109,53 @@ class Beer(object):
             self.description = ' '.join([s for s in description.strings]).strip()
 
         # get url
-        self.url = soup.find('link', rel='canonical')['href']
+        self.url = soup.find('link', rel='canonical')['href'].replace(RateBeer._BASE_URL, '')
 
         # get name
         self.name = soup_rows[0].find_all('td')[1].h1.text.strip()
 
     def __str__(self):
         return self.name
+
+    def get_reviews(self, review_order="most recent"):
+        """Returns reviews for a specific beer.
+
+        Args:
+            url (string): The specific url of the beer. Looks like:
+                "/beer/deschutes-inversion-ipa/55610/"
+            review_order (string): How to sort reviews. Three inputs:
+                most recent: Newer reviews appear earlier.
+                top raters: RateBeer.com top raters appear earlier.
+                highest score: Reviews with the highest overall score appear
+                earlier.
+
+        Returns:
+            A generator of dictionaries, containing the information about the review.
+        """
+
+        review_order = review_order.lower()
+        url_codes = {
+            "most recent": 1,
+            "top raters": 2,
+            "highest score": 3
+        }
+        url_flag = url_codes.get(review_order)
+        if not url_flag:
+            raise ValueError("Invalid ``review_order``.")
+
+        page_number = 1
+        while True:
+            complete_url = u'{0}{1}/{2}/'.format(self.url, url_flag, page_number)
+            soup = RateBeer._get_soup(complete_url)
+            content = soup.find('table', style='padding: 10px;').tr.td
+            reviews = content.find_all('div', style='padding: 0px 0px 0px 0px;')
+            if len(reviews) < 1:
+                raise StopIteration
+
+            for review_soup in reviews:
+                yield Review(review_soup, complete_url)
+
+            page_number += 1
 
 
 class Review(object):
@@ -170,7 +210,6 @@ class Brewery(object):
         self.state = Brewery._find_span(s_contents[0], 'addressRegion')
         self.country = Brewery._find_span(s_contents[0], 'addressCountry')
         self.postal_code = Brewery._find_span(s_contents[0], 'postalCode')
-        #output = dict((k, v.strip()) for k, v in output.iteritems() if v)
 
     @staticmethod
     def _find_span(search_soup, item_prop):
