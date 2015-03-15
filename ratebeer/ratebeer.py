@@ -186,11 +186,3 @@ class RateBeer(object):
                 'rating': float(data[4].text)
             })
         return output
-
-
-if __name__ == "__main__":
-    rb = RateBeer()
-    beer = rb.get_beer("/beer/summit-extra-pale-ale/7344/")
-    reviews = beer.get_reviews()
-    for i in range(10):
-        print reviews.next().__dict__
