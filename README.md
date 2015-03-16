@@ -65,7 +65,10 @@ from ratebeer import RateBeer
 RateBeer().search("summit extra pale ale")
 ```
 
-### ``ratebeer`` Methods
+### ``RateBeer`` Class
+
+**Methods**
+
 * `search` -- A generic search. A dictionary with two keys: `beers` and `breweries`. Each of those contains a list of dictionaries.
 
 ```python
@@ -82,6 +85,8 @@ RateBeer().search("summit extra pale ale")
   'url': '/beer/summit-extra-pale-ale--rose-petals/317841/'}],
   'breweries': []}
 ```
+
+* `get_beer` -- Returns a Beer object containing information about the beer. See the ``Beer`` section below. You can replicate the ``RateBeer.beer`` functionality by using ``get_beer().__dict__``.
 
 * `beer` -- Returns information about that beer. Now if we were using an API, you'd use an `id` of some variety. Unfortunately, scraping makes things a little more challenging, so as a UUID here, we're using the `url` of the beer.
 
@@ -102,6 +107,8 @@ RateBeer().search("summit extra pale ale")
  'style_rating': 78,
  'url': '/beer/new-belgium-tour-de-fall/279122/'}
 ```
+
+* `get_brewery` -- Returns a Brewery object containing information about that brewery. See the ``Brewery`` section below. You can replicate the ``RateBeer.brewery`` functionality by using ``get_brewery().__dict__``.
 
 * `brewery` -- Returns information about the brewery. Includes a 'beer' generator that provides information about the brewery's beers.
 
@@ -143,13 +150,69 @@ RateBeer().search("summit extra pale ale")
   'url': '/beer/chama-river-demolition-dubbel/33903/'}]
 ```
 
-* `get_beer` -- Returns a Beer object containing information about the beer. See the ``Beer`` section below.
+### ``Beer`` Class
 
-* `get_brewery` -- Returns a Brewery object containing information about that brewery. See the ``Brewery`` section below.
+``Beer`` requires the url of the beer you're looking for, like ``RateBeer.beer`` and ``RateBeer.get_beer``.
 
-### ``Beer`` Methods
+**Attributes**
 
-*
+* ``abv`` (float): percentage alcohol*
+* ``brewery`` (string): the name of the beer's brewery
+* ``brewery_url`` (string): that brewery's url
+* ``calories`` (float): estimated calories for the beer*
+* ``description`` (string): the beer's description
+* ``mean_rating`` (float): the mean rating for the beer (out of 5)*
+* ``name`` (string): the full name of the beer (may include the brewery name)
+* ``num_ratings`` (int): the number of reviews*
+* ``overall_rating`` (int): the overall rating (out of 100)
+* ``seasonal`` (string): which season the beer is produced in. Acts as a catch-all for any kind of miscellanious brew information.*
+* ``style`` (string): beer style
+* ``style_rating`` (int): rating of the beer within its style (out of 100)
+* ``url`` (string): the beer's url
+* ``weighted_avg`` (float): the beer rating average, weighted using some unknown algorithm (out of 5)*
+
+\* may not be available for all beers
+
+**Methods**
+
+* ``get_reviews`` -- Returns a generator of ``Review`` objects for all the reviews in the beer. Takes a ``review_order`` argument, which can be "most recent", "top raters", or "highest score".
+
+
+### ``Review`` Class
+
+``Review`` returns a datatype that contains information about a specific review. For efficiency reasons, it requires the soup of the individual review. Probably best to not try to make one yourself: use ``beer.get_reviews`` instead.
+
+**Attributes**
+
+* ``appearance`` (int): rating for appearance (out of 5)
+* ``aroma`` (int): aroma rating (out of 10)
+* ``date`` (datetime): review date
+* ``overall`` (int): overall rating (out of 20, for some reason)
+* ``palate`` (int): palate rating (out of 5)
+* ``rating`` (float): another overall rating provided in the review. Not sure how this different from ``overall``.
+* ``text`` (string): actual text of the review.
+* ``user_location`` (string): writer's location
+* ``user_name`` (string): writer's username
+
+
+### ``Brewery`` Class
+
+``Brewery`` requires the url of the brewery you want information on.
+
+**Attributes**
+
+* ``city`` (string): the brewery's city
+* ``country`` (string): the brewery's country
+* ``name`` (string): the brewery's name
+* ``postal_code`` (string): the brewery's postal code
+* ``state`` (string): the brewery's state/municipality/province.
+* ``street`` (string): the street address of the brewery.
+* ``type`` (string): the type of brewery. Typically "microbrewery" or "macrobrewery".
+* ``url`` (string): the url of the brewery
+
+**Methods**
+
+* ``get_beers`` -- Returns a generator of ``Beer`` objects for every beer produced by the brewery. Some brewery pages list beers that are produced by do not have any pages, ratings, or information besides a name. For now, these beers are omitted from the results.
 
 Tests
 -----

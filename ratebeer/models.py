@@ -1,20 +1,39 @@
 import re
 from datetime import datetime
 
-from bs4 import BeautifulSoup
-
 import rb_exceptions
 import soup as soup_helper
 
 
 class Beer(object):
+    """The Beer object. Contains information about an individual beer.
+
+    Args:
+        url (string): the URL of the beer you're looking for.
+
+    Returns:
+        abv (float): percentage alcohol*
+        brewery (string): the name of the beer's brewery
+        brewery_url (string): that brewery's url
+        calories (float): estimated calories for the beer*
+        description (string): the beer's description
+        mean_rating (float): the mean rating for the beer (out of 5)*
+        name (string): the full name of the beer (may include the brewery name)
+        num_ratings (int): the number of reviews*
+        overall_rating (int): the overall rating (out of 100)
+        seasonal (string): which season the beer is produced in. Acts as a catch-all for
+            any kind of miscellanious brew information.*
+        style (string): beer style
+        style_rating (int): rating of the beer within its style (out of 100)
+        url (string): the beer's url
+        weighted_avg (float): the beer rating average, weighted using some unknown
+            algorithm (out of 5)*
+
+        * may not be available for all beers
+
+
+    """
     def __init__(self, url):
-        """The Beer object. Contains information about an individual beer.
-
-        Args:
-            url (string): the URL of the beer you're looking for.
-
-        """
 
         soup = soup_helper._get_soup(url)
         # check for 404s
@@ -39,7 +58,7 @@ class Beer(object):
         brew_info = [s.split(': ') for s in brew_info_html.text.split(u'\xa0\xa0')]
         keyword_lookup = {
             "RATINGS": "num_ratings",
-            "MEAN": "mean",
+            "MEAN": "mean_rating",
             "WEIGHTED AVG": "weighted_avg",
             "SEASONAL": "seasonal",
             "CALORIES": "calories",
@@ -49,7 +68,6 @@ class Beer(object):
         }
         # match the data pulled from the brew info and match it to they keyword
         # in the lookup table
-        self.meta = {}
         for meta_name, meta_data in brew_info:
             match = keyword_lookup.get(meta_name.strip())
             if match == "mean":
@@ -60,10 +78,13 @@ class Beer(object):
                 continue
             # convert to float if possible
             try:
-                meta_data = float(meta_data)
+                if match == "num_ratings":
+                    meta_data = int(meta_data)
+                else:
+                    meta_data = float(meta_data)
             except ValueError:
                 pass
-            self.meta[match] = meta_data
+            setattr(self, match, meta_data)
 
         info = soup_rows[1].tr.find_all('td')
 
@@ -161,16 +182,32 @@ class Beer(object):
 
 
 class Review(object):
+    """
+    Args:
+        review_soup (soup): the soup of the review
+
+    Returns:
+        appearance (int): rating for appearance (out of 5)
+        aroma (int): aroma rating (out of 10)
+        date (datetime): review date
+        overall (int): overall rating (out of 20, for some reason)
+        palate (int): palate rating (out of 5)
+        rating (float): another overall rating provided in the review. Not sure how this different from overall.
+        text (string): actual text of the review.
+        user_location (string): writer's location
+        user_name (string): writer's username
+    """
     def __init__(self, review_soup):
         # get ratings
         # gets every second entry in a list
         raw_ratings = zip(*[iter(review_soup.find('strong').find_all(["big", "small"]))] * 2)
         # strip html and everything else
         for (label, rating) in raw_ratings:
+            rating_int = int(rating.text[:rating.text.find("/")])
             setattr(
                 self,
                 label.text.lower().strip().encode("ascii", "ignore"),
-                rating.text
+                rating_int
             )
         self.rating = float(review_soup.find_all('div')[1].text)
 
