@@ -23,13 +23,11 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-from datetime import datetime
 import re
 import requests
 from bs4 import BeautifulSoup
 
 import models
-import rb_exceptions
 import soup as soup_helper
 
 
