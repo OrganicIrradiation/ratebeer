@@ -270,11 +270,11 @@ class Brewery(object):
         self.name = soup.h1.text
         self.url = url
         self.type = re.findall(r'Type: (.*?)<br\/>', soup.renderContents())[0].strip()
-        self.street = Brewery._find_span(s_contents[0], 'streetAddress')
-        self.city = Brewery._find_span(s_contents[0], 'addressLocality')
-        self.state = Brewery._find_span(s_contents[0], 'addressRegion')
-        self.country = Brewery._find_span(s_contents[0], 'addressCountry')
-        self.postal_code = Brewery._find_span(s_contents[0], 'postalCode')
+        self.street = Brewery._find_span(s_contents[0], 'streetAddress').strip()
+        self.city = Brewery._find_span(s_contents[0], 'addressLocality').strip()
+        self.state = Brewery._find_span(s_contents[0], 'addressRegion').strip()
+        self.country = Brewery._find_span(s_contents[0], 'addressCountry').strip()
+        self.postal_code = Brewery._find_span(s_contents[0], 'postalCode').strip()
 
     @staticmethod
     def _find_span(search_soup, item_prop):
@@ -285,7 +285,7 @@ class Brewery(object):
     def get_beers(self):
         page_number = 1
         while True:
-            complete_url = '{0}0/{1}/'.format(self.url, page_number)
+            complete_url = u'{0}0/{1}/'.format(self.url, page_number)
             soup = soup_helper._get_soup(complete_url)
             soup_beer_rows = soup.find('table', 'maintable nohover').findAll('tr')
 
