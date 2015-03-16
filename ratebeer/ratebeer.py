@@ -30,6 +30,7 @@ from bs4 import BeautifulSoup
 
 import models
 import rb_exceptions
+import soup as soup_helper
 
 
 class RateBeer(object):
@@ -46,17 +47,6 @@ class RateBeer(object):
     https://github.com/alilja/ratebeer for the full README.
 
     """
-    _BASE_URL = "http://www.ratebeer.com"
-
-    @staticmethod
-    def _get_soup(url):
-        if RateBeer._BASE_URL in url:
-            url.replace(RateBeer._BASE_URL, '')
-        req = requests.get(RateBeer._BASE_URL + url, allow_redirects=True)
-        if "ratebeer robot oops" in req.text.lower():
-            raise rb_exceptions.PageNotFound(url)
-        return BeautifulSoup(req.text, "lxml")
-
     def search(self, query):
         """Returns a list of beers and breweries that matched the search query.
 
@@ -73,7 +63,7 @@ class RateBeer(object):
             query = query.encode('iso-8859-1')
 
         request = requests.post(
-            RateBeer._BASE_URL + "/findbeer.asp",
+            soup_helper._BASE_URL + "/findbeer.asp",
             data={"BeerName": query}
         )
         soup = BeautifulSoup(request.text, "lxml")
@@ -117,7 +107,7 @@ class RateBeer(object):
         return output
 
     def get_beer(self, url):
-        return models.Beer(RateBeer._get_soup(url), url)
+        return models.Beer(url)
 
     def beer(self, url):
         return self.get_beer(url).__dict__
@@ -136,7 +126,7 @@ class RateBeer(object):
         """
         styles = {}
 
-        soup = RateBeer._get_soup("/beerstyles/")
+        soup = soup_helper._get_soup("/beerstyles/")
         columns = soup.find_all('table')[2].find_all('td')
         for column in columns:
             lines = [li for li in column.find_all('li')]
@@ -165,7 +155,7 @@ class RateBeer(object):
         style_id = re.search(r"/(?P<id>\d*)/", url).group('id')
 
         req = requests.post(
-            RateBeer._BASE_URL +
+            soup_helper._BASE_URL +
             (
                 "/ajax/top-beer-by-style.asp?style={0}&sort={1}"
                 "&order=0&min=10&max=9999&retired=0&new=0&mine=0&"
@@ -186,3 +176,11 @@ class RateBeer(object):
                 'rating': float(data[4].text)
             })
         return output
+
+if __name__ == "__main__":
+    print "hello"
+    rb = RateBeer()
+    brewery = rb.get_brewery("/brewers/deschutes-brewery/233/")
+    beers = brewery.get_beers()
+    for i in range(10):
+        print beers.next()

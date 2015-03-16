@@ -65,7 +65,7 @@ from ratebeer import RateBeer
 RateBeer().search("summit extra pale ale")
 ```
 
-### Methods
+### ``ratebeer`` Methods
 * `search` -- A generic search. A dictionary with two keys: `beers` and `breweries`. Each of those contains a list of dictionaries.
 
 ```python
@@ -87,21 +87,20 @@ RateBeer().search("summit extra pale ale")
 
 ```python
 >>> rb.beer("/beer/new-belgium-tour-de-fall/279122/")
-{'abv': 6.0,
-  'brewery': u'New Belgium Brewing Company',
-  'brewery_country': u'USA',
-  'brewery_url': '/brewers/new-belgium-brewing-company/77/',
-  'calories': 180.0,
-  'description': u'New Belgium\x92s love for beer, bikes and benefits is best described by being at Tour de Fat. Our love for Cascade and Amarillo hops is best tasted in our Tour de Fall Pale Ale. We\x92re cruising both across the country during our favorite time of year. Hop on and find Tour de Fall Pale Ale in fall 2014.',
-  'ibu': 38.0,
-  'name': u'New Belgium Tour de Fall',
-  'num_ratings': 254.0,
-  'overall_rating': 80,
-  'seasonal': u'Autumn',
-  'style': u'American Pale Ale',
-  'style_rating': 78,
-  'url': '/beer/new-belgium-tour-de-fall/279122/',
-  'weighted_avg': 3.33}
+{'brewery': u'New Belgium Brewing Company',
+ 'brewery_url': '/brewers/new-belgium-brewing-company/77/',
+ 'description': u'New Belgium\x92s love for beer, bikes and benefits is best described by being at Tour de Fat. Our love for Cascade and Amarillo hops is best tasted in our Tour de Fall Pale Ale. We\x92re cruising both across the country during our favorite time of year. Hop on and find Tour de Fall Pale Ale in fall 2014.',
+ 'meta': {'abv': 6.0,
+          'calories': 180.0,
+          'ibu': 38.0,
+          'num_ratings': 254.0,
+          'seasonal': u'Autumn',
+          'weighted_avg': 3.33},
+ 'name': u'New Belgium Tour de Fall',
+ 'overall_rating': 80,
+ 'style': u'American Pale Ale',
+ 'style_rating': 78,
+ 'url': '/beer/new-belgium-tour-de-fall/279122/'}
 ```
 
 * `brewery` -- Returns information about the brewery. Includes a 'beer' generator that provides information about the brewery's beers.
@@ -109,44 +108,14 @@ RateBeer().search("summit extra pale ale")
 ```python
 >>> brewery = rb.brewery("/brewers/deschutes-brewery/233/")
 >>> print brewery
-{'beers': <generator object __beers at 0x10ce0d730>,
- 'city': u'Bend',
+{'city': u'Bend',
  'country': u'USA',
  'name': u'Deschutes Brewery',
  'postal_code': u'97702',
  'state': u'Oregon',
  'street': u'901 SW Simpson Ave',
  'type': 'Microbrewery',
- 'url': '/brewers/deschutes-brewery/233/',
- 'url_name': 'deschutes-brewery'}
->>> brewery['beers'].next()
-{'abv': 6.5,
- 'brewery': u'Deschutes Brewery',
- 'brewery_url': '/brewers/deschutes-brewery/233/',
- 'id': 176946,
- 'name': u'Deschutes / Hopworks India Red Lager',
- 'num_ratings': 12,
- 'overall_rating': 85,
- 'style_rating': 99,
- 'url': '/beer/deschutes--hopworks-india-red-lager/176946/',
- 'weighted_avg': 3.37}
-```
-
-* `reviews` -- Returns a generator of dictionaries containing reviews. Requires a `url`, can also take `review_order` ("most recent", "top raters", "highest score"):
-
-```python
->>> reviews = rb.reviews("/beer/alchemist-heady-topper/32329/1/118/")
->>> reviews.next()
-{'appearance': u'3/5',
- 'aroma': u'9/10',
- 'date': datetime.date(2010, 9, 26),
- 'overall': u'19/20',
- 'palate': u'3/5',
- 'rating': 4.3,
- 'taste': u'9/10',
- 'text': u'...',
- 'user_location': u'Montreal, Quebec, CANADA',
- 'user_name': u'MJGG'}
+ 'url': '/brewers/deschutes-brewery/233/'}
 ```
 
 * `beer_style_list` -- Returns a dictionary containing the beer style name and a link to that page.
@@ -174,6 +143,13 @@ RateBeer().search("summit extra pale ale")
   'url': '/beer/chama-river-demolition-dubbel/33903/'}]
 ```
 
+* `get_beer` -- Returns a Beer object containing information about the beer. See the ``Beer`` section below.
+
+* `get_brewery` -- Returns a Brewery object containing information about that brewery. See the ``Brewery`` section below.
+
+### ``Beer`` Methods
+
+*
 
 Tests
 -----
@@ -184,6 +160,14 @@ Changes
 -------
 
 Note that the nature of web scraping means this will be in **perpetual beta.**
+
+###v2.0
+
+Major changes.
+
+* New ``Beer``, ``Review``, and ``Brewery`` classes.
+* Substantial overhaul in ``ratebeer.py``, addition of new files including separation of responsibilities
+* New generator functions in new classes.
 
 ###v1.4
 

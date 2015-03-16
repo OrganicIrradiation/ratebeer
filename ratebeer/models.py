@@ -4,17 +4,19 @@ from datetime import datetime
 from bs4 import BeautifulSoup
 
 import rb_exceptions
-from ratebeer import RateBeer
+import soup as soup_helper
 
 
 class Beer(object):
-    def __init__(self, soup, url):
+    def __init__(self, url):
         """The Beer object. Contains information about an individual beer.
 
         Args:
             soup (Soup): the BeautifulSoup object for the beer page.
 
         """
+
+        soup = soup_helper._get_soup(url)
         # check for 404s
         try:
             soup_rows = soup.find('div', id='container').find('table').find_all('tr')
@@ -109,7 +111,7 @@ class Beer(object):
             self.description = ' '.join([s for s in description.strings]).strip()
 
         # get url
-        self.url = soup.find('link', rel='canonical')['href'].replace(RateBeer._BASE_URL, '')
+        self.url = soup.find('link', rel='canonical')['href'].replace(soup_helper._BASE_URL, '')
 
         # get name
         self.name = soup_rows[0].find_all('td')[1].h1.text.strip()
@@ -146,7 +148,7 @@ class Beer(object):
         page_number = 1
         while True:
             complete_url = u'{0}{1}/{2}/'.format(self.url, url_flag, page_number)
-            soup = RateBeer._get_soup(complete_url)
+            soup = soup_helper._get_soup(complete_url)
             content = soup.find('table', style='padding: 10px;').tr.td
             reviews = content.find_all('div', style='padding: 0px 0px 0px 0px;')
             if len(reviews) < 1:
@@ -196,7 +198,7 @@ class Brewery(object):
         Returns:
             A dictionary of attributes about that brewery."""
 
-        soup = RateBeer._get_soup(url)
+        soup = soup_helper._get_soup(url)
         try:
             s_contents = soup.find('div', id='container').find('table').find_all('tr')[0].find_all('td')
         except AttributeError:
@@ -204,7 +206,7 @@ class Brewery(object):
 
         self.name = soup.h1.text
         self.url = url
-        self.type = re.findall(r'Type: (.*?)<br\/>', soup.renderContents())[0]
+        self.type = re.findall(r'Type: (.*?)<br\/>', soup.renderContents())[0].strip()
         self.street = Brewery._find_span(s_contents[0], 'streetAddress')
         self.city = Brewery._find_span(s_contents[0], 'addressLocality')
         self.state = Brewery._find_span(s_contents[0], 'addressRegion')
@@ -221,7 +223,7 @@ class Brewery(object):
         page_number = 1
         while True:
             complete_url = '{0}0/{1}/'.format(self.url, page_number)
-            soup = RateBeer._get_soup(complete_url)
+            soup = soup_helper._get_soup(complete_url)
             soup_beer_rows = soup.find('table', 'maintable nohover').findAll('tr')
 
             if len(soup_beer_rows) < 2:
@@ -232,7 +234,7 @@ class Brewery(object):
                 # sometimes the beer is listed but it doesn't have a page
                 # ignore it for now
                 try:
-                    beer = Beer(RateBeer._get_soup(url), url)
+                    beer = Beer(url)
                 except rb_exceptions.PageNotFound:
                     continue
                 yield beer
