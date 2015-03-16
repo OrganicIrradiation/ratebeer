@@ -183,4 +183,7 @@ if __name__ == "__main__":
     brewery = rb.get_brewery("/brewers/deschutes-brewery/233/")
     beers = brewery.get_beers()
     for i in range(10):
-        print beers.next()
+        reviews = beers.next().get_reviews()
+        for j in range(10):
+            print reviews.next()
+

@@ -12,7 +12,7 @@ class Beer(object):
         """The Beer object. Contains information about an individual beer.
 
         Args:
-            soup (Soup): the BeautifulSoup object for the beer page.
+            url (string): the URL of the beer you're looking for.
 
         """
 
@@ -155,13 +155,13 @@ class Beer(object):
                 raise StopIteration
 
             for review_soup in reviews:
-                yield Review(review_soup, complete_url)
+                yield Review(review_soup)
 
             page_number += 1
 
 
 class Review(object):
-    def __init__(self, review_soup, url):
+    def __init__(self, review_soup):
         # get ratings
         # gets every second entry in a list
         raw_ratings = zip(*[iter(review_soup.find('strong').find_all(["big", "small"]))] * 2)
@@ -186,6 +186,7 @@ class Review(object):
 
     def __str__(self):
         return self.text
+
 
 class Brewery(object):
     def __init__(self, url):
