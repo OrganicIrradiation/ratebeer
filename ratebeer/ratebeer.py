@@ -23,6 +23,7 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
+
 import re
 import requests
 from bs4 import BeautifulSoup
@@ -33,18 +34,22 @@ import soup as soup_helper
 
 class RateBeer(object):
     """
-    Makes getting information about beers and breweries from RateBeer.com easy.
+    RateBeer.com data scraper. Makes getting information from RateBeer.com as easy as:
 
-    >>> summit_search = RateBeer().search("summit extra pale ale")
+    .. code:: python
 
-    A utility for searching RateBeer.com, finding information about beers,
-    breweries, and reviews. The nature of web scraping means that this package
-    is offered in perpetual beta.
+        >>> rb = RateBeer()
+        >>> rb.search("summit extra pale ale")
+        {'beers': [{'name': [u'Summit Extra Pale Ale'],
+            'num_ratings': 678,
+            'rating': 73  ,
+            'url': u'/beer/summit-extra-pale-ale/7344/'}],
+        'breweries': []}
 
-    Requires BeautifulSoup4, Requests, and lxml. See
-    https://github.com/alilja/ratebeer for the full README.
-
+    See the full README at https://github.com/alilja/ratebeer
     """
+    VERSION = "2.0"
+
     def search(self, query):
         """Returns a list of beers and breweries that matched the search query.
 
@@ -174,14 +179,3 @@ class RateBeer(object):
                 'rating': float(data[4].text)
             })
         return output
-
-if __name__ == "__main__":
-    print "hello"
-    rb = RateBeer()
-    brewery = rb.get_brewery("/brewers/deschutes-brewery/233/")
-    beers = brewery.get_beers()
-    for i in range(10):
-        reviews = beers.next().get_reviews()
-        for j in range(10):
-            print reviews.next()
-
