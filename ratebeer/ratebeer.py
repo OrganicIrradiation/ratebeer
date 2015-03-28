@@ -143,7 +143,7 @@ class RateBeer(object):
                 and trending ones.
 
         Returns:
-            A list of dictionaries containing the beers.
+            A list of generator of beers.
         """
         sort_type = sort_type.lower()
         url_codes = {"overall": 0, "trending": 1}
@@ -165,15 +165,10 @@ class RateBeer(object):
         rows = iter(soup.table.find_all('tr'))
         next(rows)
 
-        output = []
         for row in rows:
             data = row.find_all('td')
-            output.append({
-                'name': data[1].text,
-                'url': data[1].a.get('href'),
-                'rating': float(data[4].text)
-            })
-        return output
+            yield models.Beer(data[1].a.get('href'))
+        raise StopIteration
 
 if __name__ == "__main__":
     print "hello"
