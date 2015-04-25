@@ -66,6 +66,13 @@ class Beer(object):
             soup_rows = soup.find('div', id='container').find('table').find_all('tr')
         except AttributeError:
             raise rb_exceptions.PageNotFound(url)
+        # ratebeer pages don't actually 404, they just send you to this weird
+        # "beer reference" page but the url doesn't actually change, it just
+        # seems like it's all getting done server side -- so we have to look
+        # for the contents h1 to see if we're looking at the beer reference or
+        # not
+        if "beer reference" in soup_rows[0].find_all('td')[1].h1.contents:
+            raise rb_exceptions.PageNotFound(url)
 
         if "Also known as " in soup_rows[1].find_all('td')[1].div.div.contents:
             raise rb_exceptions.AliasedBeer(url, soup_rows[1].find_all('td')[1].div.div.a['href'])
