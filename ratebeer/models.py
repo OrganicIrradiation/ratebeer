@@ -243,7 +243,7 @@ class Review(object):
         self.user_location = re.findall(r'-\s(.*?)\s-', userinfo.a.next_sibling)[0]
 
         # get date it was posted
-        date = re.findall(r'-\s.*?\s-\s(.*)', userinfo.a.next_sibling)[0]
+        date = re.findall(r'-(?:\s.*?\s-)+\s(.*)', userinfo.a.next_sibling)[0]
         self.date = datetime.strptime(date.strip(), '%b %d, %Y').date()
 
     def __str__(self):
@@ -270,16 +270,16 @@ class Brewery(object):
         self.name = soup.h1.text
         self.url = url
         self.type = re.findall(r'Type: (.*?)<br\/>', soup.renderContents())[0].strip()
-        self.street = Brewery._find_span(s_contents[0], 'streetAddress').strip()
-        self.city = Brewery._find_span(s_contents[0], 'addressLocality').strip()
-        self.state = Brewery._find_span(s_contents[0], 'addressRegion').strip()
-        self.country = Brewery._find_span(s_contents[0], 'addressCountry').strip()
-        self.postal_code = Brewery._find_span(s_contents[0], 'postalCode').strip()
+        self.street = Brewery._find_span(s_contents[0], 'streetAddress')
+        self.city = Brewery._find_span(s_contents[0], 'addressLocality')
+        self.state = Brewery._find_span(s_contents[0], 'addressRegion')
+        self.country = Brewery._find_span(s_contents[0], 'addressCountry')
+        self.postal_code = Brewery._find_span(s_contents[0], 'postalCode')
 
     @staticmethod
     def _find_span(search_soup, item_prop):
         output = search_soup.find('span', attrs={'itemprop': item_prop})
-        output = output.text if output else None
+        output = output.text.strip() if output else None
         return output
 
     def get_beers(self):
@@ -294,6 +294,9 @@ class Brewery(object):
 
             for row in soup_beer_rows[1:]:
                 url = row.a.get('href')
+                # Only return rows that are ratable
+                if not row.find(class_='rate'):
+                    continue
                 # sometimes the beer is listed but it doesn't have a page
                 # ignore it for now
                 try:
