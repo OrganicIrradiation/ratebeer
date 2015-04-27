@@ -143,6 +143,14 @@ class Beer(object):
         if brewery_info[3]:
             self.style = brewery_info[3].text.strip()
 
+        # get the beer country
+        if ',' in brewery_info[5]:
+            # Non-USA addresses
+            self.brewery_country = brewery_info[5].split(',')[1].strip()
+        else:
+            # USA addresses
+            self.brewery_country = brewery_info[8].strip()
+
         # get the beer description
         description = soup_rows[1].find_all('td')[1].find(
             'div',
