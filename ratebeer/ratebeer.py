@@ -56,8 +56,9 @@ class RateBeer(object):
             Each list contains a dictionary of attributes of that brewery or
             beer.
         """
-        query = unicode(query, 'UTF8').encode('iso-8859-1')
-        if isinstance(query, unicode):
+        try:
+            query = unicode(query, 'UTF8').encode('iso-8859-1')
+        except TypeError:
             query = query.encode('iso-8859-1')
 
         request = requests.post(
