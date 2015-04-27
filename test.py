@@ -7,8 +7,8 @@ from ratebeer import rb_exceptions
 
 
 class TestSearch(unittest.TestCase):
-    def test_search(self):
-        ''' Test out the search function with a str search '''
+    def test_str_ascii_search(self):
+        ''' Test out the search function with an ASCII only str search '''
         results = RateBeer().search("deschutes inversion")
         self.assertListEqual(results['breweries'], [])
         self.assertIsNotNone(results['beers'])
@@ -18,9 +18,31 @@ class TestSearch(unittest.TestCase):
             'id': 55610
         }, results['beers'][0])
 
-    def test_unicode_search(self):
-        ''' Test out the search function with a unicode search '''
+    def test_unicode_ascii_search(self):
+        ''' Test out the search function with an ASCII only unicode search '''
+        results = RateBeer().search(u"deschutes inversion")
+        self.assertListEqual(results['breweries'], [])
+        self.assertIsNotNone(results['beers'])
+        self.assertDictContainsSubset({
+            'url': '/beer/deschutes-inversion-ipa/55610/',
+            'name': u'Deschutes Inversion IPA',
+            'id': 55610
+        }, results['beers'][0])
+
+    def test_str_nonascii_search(self):
+        ''' Test out the search function with a str with more than ASCII characters '''
         results = RateBeer().search("to øl jule mælk")
+        self.assertListEqual(results['breweries'], [])
+        self.assertIsNotNone(results['beers'])
+        self.assertDictContainsSubset({
+            'url': '/beer/to-ol-jule-maelk/235066/',
+            'name': u'To Øl Jule Mælk',
+            'id': 235066
+        }, results['beers'][0])
+
+    def test_unicode_nonascii_search(self):
+        ''' Test out the search function with a unicode string with more than ASCII characters '''
+        results = RateBeer().search(u"to øl jule mælk")
         self.assertListEqual(results['breweries'], [])
         self.assertIsNotNone(results['beers'])
         self.assertDictContainsSubset({
