@@ -28,8 +28,12 @@ import re
 import requests
 from bs4 import BeautifulSoup
 
-import models
-import soup as soup_helper
+try:
+    import models
+    import soup as soup_helper
+except ImportError as e: # No implicit package imports in py3.
+    from ratebeer import models
+    from ratebeer import soup as soup_helper
 
 
 class RateBeer(object):
@@ -61,9 +65,10 @@ class RateBeer(object):
             Each list contains a dictionary of attributes of that brewery or
             beer.
         """
+
         try:
             query = unicode(query, 'UTF8').encode('iso-8859-1')
-        except TypeError:
+        except (TypeError, NameError): # Python 3 does not have unicode()
             query = query.encode('iso-8859-1')
 
         request = requests.post(

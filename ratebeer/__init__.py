@@ -25,6 +25,6 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-from ratebeer import RateBeer
+from .ratebeer import RateBeer
 
 __all__ = [RateBeer]
