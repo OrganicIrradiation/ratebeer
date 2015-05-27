@@ -43,6 +43,8 @@ Requirements
 
 Requires [requests](https://pypi.python.org/pypi/requests), [beautifulsoup4](https://pypi.python.org/pypi/beautifulsoup4/4.3.2), and [lxml](https://pypi.python.org/pypi/lxml/3.4.1).
 
+Python 2 and 3 compatability graciously provided by Vincent Castellano (@[Surye](https://github.com/Surye)).
+
 
 Installation
 ------------
@@ -212,7 +214,12 @@ Tests
 Changes
 -------
 
-Note that the nature of web scraping means this will be in **perpetual beta.**
+Note that the nature of web scraping means this might break at **any** time.
+
+###v2.1
+
+* Bugfixes and performance enhancements.
+* Python 3 compatibility.
 
 ###v2.0
 
