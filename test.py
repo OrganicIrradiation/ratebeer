@@ -95,7 +95,7 @@ class TestBeer(unittest.TestCase):
         ''' Check to make multi-page review searches work properly '''
         reviews = RateBeer().get_beer("/beer/deschutes-inversion-ipa/55610/").get_reviews()
         for i in range(3):
-            self.assertIsNotNone(reviews.next())
+            self.assertIsNotNone(next(reviews))
 
 
 class TestBrewery(unittest.TestCase):
@@ -128,7 +128,7 @@ class TestBrewery(unittest.TestCase):
         ''' Check to make multi-page review searches work properly '''
         beers = RateBeer().get_brewery("/brewers/deschutes-brewery/233/").get_beers()
         for i in range(3):
-            self.assertIsNotNone(beers.next())
+            self.assertIsNotNone(next(beers))
 
 
 if __name__ == '__main__':

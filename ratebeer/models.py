@@ -26,8 +26,12 @@
 import re
 from datetime import datetime
 
-import rb_exceptions
-import soup as soup_helper
+try:
+    import rb_exceptions
+    import soup as soup_helper
+except ImportError: # No implicit package imports in py3.
+    from ratebeer import rb_exceptions
+    from ratebeer import soup as soup_helper
 
 
 class Beer(object):
@@ -239,14 +243,14 @@ class Review(object):
             rating_int = int(rating.text[:rating.text.find("/")])
             setattr(
                 self,
-                label.text.lower().strip().encode("ascii", "ignore"),
+                label.text.lower().strip(),
                 rating_int
             )
         self.rating = float(review_soup.find_all('div')[1].text)
 
         # get user information
         userinfo = review_soup.next_sibling
-        self.text = userinfo.next_sibling.next_sibling.text.strip().encode("ascii", "ignore")
+        self.text = userinfo.next_sibling.next_sibling.text.strip()
         self.user_name = re.findall(r'(.*?)\xa0\(\d*?\)', userinfo.a.text)[0]
         self.user_location = re.findall(r'-\s(.*?)\s-', userinfo.a.next_sibling)[0]
 
@@ -277,7 +281,7 @@ class Brewery(object):
 
         self.name = soup.h1.text
         self.url = url
-        self.type = re.findall(r'Type: (.*?)<br\/>', soup.renderContents())[0].strip()
+        self.type = re.findall(r'Type: (.*?)<br\/>', soup.decode_contents())[0].strip()
         self.street = Brewery._find_span(s_contents[0], 'streetAddress')
         self.city = Brewery._find_span(s_contents[0], 'addressLocality')
         self.state = Brewery._find_span(s_contents[0], 'addressRegion')
