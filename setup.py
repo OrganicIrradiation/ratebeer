@@ -31,7 +31,7 @@ setup(
     install_requires=[
         "beautifulsoup4",
         "lxml",
-        "requests",
+        "requests[security]",
     ],
     test_suite="test.py",
 )

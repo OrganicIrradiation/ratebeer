@@ -23,7 +23,6 @@
 #
 # For more information, please refer to <http://unlicense.org/>
 
-
 import re
 import requests
 from bs4 import BeautifulSoup
