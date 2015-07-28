@@ -41,17 +41,31 @@ class RateBeer(object):
 
     .. code:: python
 
-        >>> rb = RateBeer()
-        >>> rb.search("summit extra pale ale")
-        {'beers': [{'name': [u'Summit Extra Pale Ale'],
-            'num_ratings': 678,
-            'rating': 73  ,
-            'url': u'/beer/summit-extra-pale-ale/7344/'}],
-        'breweries': []}
+        >>> import ratebeer
+        >>> rb = ratebeer.RateBeer()
+        >>> results = rb.search("summit extra pale ale")
+            {'beers': [Beer('/beer/summit-extra-pale-ale/7344/'),
+                       Beer('/beer/summit-extra-pale-ale--rose-petals/317841/')],
+             'breweries': []}
+        >>> results['beers'][0].__dict__
+            {'_has_fetched': True,
+             'abv': 5.1,
+             'brewery': 'Summit Brewing Company',
+             'brewery_country': 'USA',
+             'brewery_url': '/brewers/summit-brewing-company/1233/',
+             'calories': 153.0,
+             'description': 'Summit Extra Pale Ale is not a beer brewed only for beer snobs. Just the opposite. It\x92s a beer for everyone to enjoy: construction workers, stock brokers, farmers, sales people, clerks, teachers, lawyers, doctors, even other brewers. Its light bronze color and distinctly hoppy flavor have made it a favorite in St. Paul, Minneapolis and the rest of the Upper Midwest ever since we first brewed it back in 1986.',
+             'name': 'Summit Extra Pale Ale',
+             'num_ratings': 698,
+             'overall_rating': 68,
+             'style': 'American Pale Ale',
+             'style_rating': 59,
+             'url': '/beer/summit-extra-pale-ale/7344/',
+             'weighted_avg': 3.27}
 
     See the full README at https://github.com/alilja/ratebeer
     """
-    VERSION = "2.1"
+    VERSION = "2.2alpha"
 
     def search(self, query):
         """Returns a list of beers and breweries that matched the search query.
@@ -84,14 +98,10 @@ class RateBeer(object):
                 # find brewery information
                 soup_breweries = soup_results[index - 1].find_all('tr')
                 for row in soup_breweries:
-                    location = row.find('td', {'align': 'right'})
-
-                    output['breweries'].append({
-                        "name": row.a.text,
-                        "url": row.a.get('href'),
-                        "id": int(re.search(r"/(?P<id>\d*)/", row.a.get('href')).group('id')),
-                        "location": location.text.strip(),
-                    })
+                    dataout = models.Brewery(row.a.get('href'))
+                    dataout.name = row.a.text
+                    dataout.location = row.find('td', {'align': 'right'})
+                    output['breweries'].append(dataout)
 
             elif "beers" in val:
                 # find beer information
@@ -100,34 +110,41 @@ class RateBeer(object):
                     next(soup_beer_rows)
                     for row in soup_beer_rows:
                         link = row.find('td', 'results').a
+                        dataout = models.Beer(link.get('href'))
+                        dataout.name = link.text
+
                         row_data = row.findAll('td')
                         overall_rating = row_data[3].text.strip()
                         num_ratings = row_data[4].text.strip()
-                        beer = {}
-                        beer['name'] = link.text
-                        beer['url'] = link.get('href')
-                        beer['id'] = int(re.search(r"/(?P<id>\d*)/", link.get('href')).group('id'))
                         if len(overall_rating) > 0:
-                            beer['overall_rating'] = int(overall_rating)
+                            dataout.overall_rating = int(overall_rating)
                         if len(num_ratings) > 0:
-                            beer['num_ratings'] = int(num_ratings)
-                        output['beers'].append(beer)
+                            dataout.num_ratings = int(num_ratings)
+                        output['beers'].append(dataout)
         return output
 
-    def get_beer(self, url):
-        return models.Beer(url)
+    def get_beer(self, url, fetch=None):
+        """Returns a Beer object for the requested URL"""
+        if fetch is None:
+            fetch = False
+        return models.Beer(url, fetch)
 
     def beer(self, url):
-        return self.get_beer(url).__dict__
+        """Returns a dict with beer information for the requested URL"""
+        return self.get_beer(url, True).__dict__
 
-    def get_brewery(self, url):
-        return models.Brewery(url)
+    def get_brewery(self, url, fetch=None):
+        """Returns a Brewery object for the requested URL"""
+        if fetch is None:
+            fetch = False
+        return models.Brewery(url, fetch)
 
     def brewery(self, url):
-        return self.get_brewery(url).__dict__
+        """Returns a dict with brewery information for the requested URL"""
+        return self.get_brewery(url, True).__dict__
 
     def beer_style_list(self):
-        """Returns the list of beer styles from the beer styles page.
+        """Returns the beer styles from the beer styles page.
 
         Returns:
             A dictionary, with beer styles for keys and urls for values.
@@ -177,5 +194,8 @@ class RateBeer(object):
 
         for row in rows:
             data = row.find_all('td')
-            yield models.Beer(data[1].a.get('href'))
+            link = data[1].a
+            dataout = models.Beer(link.get('href'))
+            dataout.name = link.text
+            yield dataout
         raise StopIteration

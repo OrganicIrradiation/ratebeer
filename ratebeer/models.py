@@ -62,24 +62,62 @@ class Beer(object):
 
 
     """
-    def __init__(self, url):
+    def __init__(self, url, fetch=None):
+        """Initialize with URL and do not fetch"""
+        self.url = url
+        if fetch is None:
+            fetch = False
+        if fetch:
+            self._populate()
+        self._has_fetched = fetch
 
-        soup = soup_helper._get_soup(url)
+    def __getattr__(self, item):
+        """Return the value of the `attr` attribute."""
+        if item in self.__dict__.keys():
+            return self.__dict__[item]
+        elif not self._has_fetched:
+            self._populate()
+            return getattr(self, item)
+        raise AttributeError('\'%s\' has no attribute \'%s\'' % (type(self), item))
+
+    def __setattr__(self, name, value):
+        """Set the `name` attribute to `value."""
+        object.__setattr__(self, name, value)
+
+    def __getstate__(self):
+        """Provide state information for pickling"""
+        result = self.__dict__.copy()
+        return result
+
+    def __setstate__(self, statedata):
+        """Reset the state after pickling"""
+        self.__dict__ = statedata
+
+    def __repr__(self):
+        """Unambiguous representation to recreate object"""
+        return "<Beer('{0}')>".format(self.url)
+
+    def __str__(self):
+        """Provide a nicely formatted representation"""
+        return self.name
+
+    def _populate(self):
+        soup = soup_helper._get_soup(self.url)
         # check for 404s
         try:
             soup_rows = soup.find('div', id='container').find('table').find_all('tr')
         except AttributeError:
-            raise rb_exceptions.PageNotFound(url)
+            raise rb_exceptions.PageNotFound(self.url)
         # ratebeer pages don't actually 404, they just send you to this weird
         # "beer reference" page but the url doesn't actually change, it just
         # seems like it's all getting done server side -- so we have to look
         # for the contents h1 to see if we're looking at the beer reference or
         # not
         if "beer reference" in soup_rows[0].find_all('td')[1].h1.contents:
-            raise rb_exceptions.PageNotFound(url)
+            raise rb_exceptions.PageNotFound(self.url)
 
         if "Also known as " in soup_rows[1].find_all('td')[1].div.div.contents:
-            raise rb_exceptions.AliasedBeer(url, soup_rows[1].find_all('td')[1].div.div.a['href'])
+            raise rb_exceptions.AliasedBeer(self.url, soup_rows[1].find_all('td')[1].div.div.a['href'])
 
         # get beer meta information
         # grab the html and split it into a keyword and value
@@ -168,14 +206,11 @@ class Beer(object):
             _ = [s.extract() for s in description('small')]
             self.description = ' '.join([s for s in description.strings]).strip()
 
-        # get url
-        self.url = soup.find('link', rel='canonical')['href'].replace(soup_helper._BASE_URL, '')
-
         # get name
         self.name = soup_rows[0].find_all('td')[1].h1.text.strip()
+        self._has_fetched = True
 
-    def __str__(self):
-        return self.name
+        return self
 
     def get_reviews(self, review_order="most recent"):
         """Returns reviews for a specific beer.
@@ -234,6 +269,7 @@ class Review(object):
         user_location (string): writer's location
         user_name (string): writer's username
     """
+
     def __init__(self, review_soup):
         # get ratings
         # gets every second entry in a list
@@ -259,11 +295,51 @@ class Review(object):
         self.date = datetime.strptime(date.strip(), '%b %d, %Y').date()
 
     def __str__(self):
+        """Provide a nicely formatted representation"""
         return self.text
 
 
 class Brewery(object):
-    def __init__(self, url):
+    def __init__(self, url, fetch=None):
+        """Initialize with URL and do not fetch"""
+        self.url = url
+        if fetch is None:
+            fetch = False
+        if fetch:
+            self._populate()
+        self._has_fetched = fetch
+
+    def __getattr__(self, item):
+        """Return the value of the `attr` attribute."""
+        if item in self.__dict__.keys():
+            return self.__dict__[item]
+        elif not self._has_fetched:
+            self._populate()
+            return getattr(self, item)
+        raise AttributeError('\'%s\' has no attribute \'%s\'' % (type(self), item))
+
+    def __setattr__(self, name, value):
+        """Set the `name` attribute to `value."""
+        object.__setattr__(self, name, value)
+
+    def __getstate__(self):
+        """Provide state information for pickling"""
+        result = self.__dict__.copy()
+        return result
+
+    def __setstate__(self, statedata):
+        """Reset the state after pickling"""
+        self.__dict__ = statedata
+
+    def __repr__(self):
+        """Unambiguous representation to recreate object"""
+        return "<Brewery('{0}')>".format(self.url)
+
+    def __str__(self):
+        """Provide a nicely formatted representation"""
+        return self.name
+
+    def _populate(self):
         """Returns information about a specific brewery.
 
         Args:
@@ -273,20 +349,22 @@ class Brewery(object):
         Returns:
             A dictionary of attributes about that brewery."""
 
-        soup = soup_helper._get_soup(url)
+        soup = soup_helper._get_soup(self.url)
         try:
             s_contents = soup.find('div', id='container').find('table').find_all('tr')[0].find_all('td')
         except AttributeError:
-            raise rb_exceptions.PageNotFound(url)
+            raise rb_exceptions.PageNotFound(self.url)
 
         self.name = soup.h1.text
-        self.url = url
         self.type = re.findall(r'Type: (.*?)<br\/>', soup.decode_contents())[0].strip()
         self.street = Brewery._find_span(s_contents[0], 'streetAddress')
         self.city = Brewery._find_span(s_contents[0], 'addressLocality')
         self.state = Brewery._find_span(s_contents[0], 'addressRegion')
         self.country = Brewery._find_span(s_contents[0], 'addressCountry')
         self.postal_code = Brewery._find_span(s_contents[0], 'postalCode')
+        self._has_fetched = True
+
+        return self
 
     @staticmethod
     def _find_span(search_soup, item_prop):
@@ -295,6 +373,7 @@ class Brewery(object):
         return output
 
     def get_beers(self):
+        """Generator that provides Beer objects for the brewery's beers"""
         page_number = 1
         while True:
             complete_url = u'{0}0/{1}/'.format(self.url, page_number)
@@ -309,12 +388,7 @@ class Brewery(object):
                 # Only return rows that are ratable
                 if not row.find(class_='rate'):
                     continue
-                # sometimes the beer is listed but it doesn't have a page
-                # ignore it for now
-                try:
-                    beer = Beer(url)
-                except rb_exceptions.PageNotFound:
-                    continue
+                beer = Beer(url)
                 yield beer
 
             page_number += 1
