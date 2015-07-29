@@ -228,6 +228,9 @@ class Beer(object):
             A generator of dictionaries, containing the information about the review.
         """
 
+        if not self._has_fetched:
+            self._populate()
+
         review_order = review_order.lower()
         url_codes = {
             "most recent": 1,
@@ -374,6 +377,9 @@ class Brewery(object):
 
     def get_beers(self):
         """Generator that provides Beer objects for the brewery's beers"""
+        if not self._has_fetched:
+            self._populate()
+
         page_number = 1
         while True:
             complete_url = u'{0}0/{1}/'.format(self.url, page_number)

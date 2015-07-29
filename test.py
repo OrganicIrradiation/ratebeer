@@ -22,24 +22,19 @@ class TestBeer(unittest.TestCase):
     def test_beer_404(self):
         ''' Checks to make sure that we appropriately raise a page not found '''
         rb = RateBeer()
-        self.assertRaises(rb_exceptions.PageNotFound, rb.beer, "/beer/sdfasdf")
+        self.assertRaises(rb_exceptions.PageNotFound, rb.beer, "/beer/asdfasdf")
 
-    def test_beer_country(self):
-        results = RateBeer().beer("/beer/rochefort-trappistes-10/2360/")
-        self.assertIsNotNone(results)
-        superset = results
-        subset = {'name': u'Rochefort Trappistes 10',
-                  'brewery': u'Brasserie Rochefort',
-                  'brewery_url': u'/brewers/brasserie-rochefort/406/',
-                  'style': u'Abt/Quadrupel',
-                  'abv': 11.3}
-        self.assertTrue(all(item in superset.items() for item in subset.items()))
-
-    def test_beer_reviews(self):
+    def test_beer_get_reviews(self):
         ''' Check to make multi-page review searches work properly '''
         reviews = RateBeer().get_beer("/beer/deschutes-inversion-ipa/55610/").get_reviews()
         for i in range(3):
             self.assertIsNotNone(next(reviews))
+
+    def test_beer_get_reviews_404(self):
+        ''' Check lazy get_reviews 404 exception '''
+        beer = RateBeer().get_beer("/beer/asdfasdf")
+        with self.assertRaises(rb_exceptions.PageNotFound):
+            next(beer.get_reviews())
 
     def test_beer_unicode(self):
         results = RateBeer().beer("/beer/steoji-oktoberbjor/292390/")
@@ -68,11 +63,17 @@ class TestBrewery(unittest.TestCase):
         rb = RateBeer()
         self.assertRaises(rb_exceptions.PageNotFound, rb.brewery, "/brewers/qwerty/1234567890")
 
-    def test_brewery_beers(self):
+    def test_brewery_get_beers(self):
         ''' Check to make multi-page review searches work properly '''
         beers = RateBeer().get_brewery("/brewers/deschutes-brewery/233/").get_beers()
         for i in range(3):
             self.assertIsNotNone(next(beers))
+
+    def test_brewery_get_beers_404(self):
+        ''' Check lazy get_beer 404 exception '''
+        brewery = RateBeer().get_brewery("/brewers/qwerty/1234567890")
+        with self.assertRaises(rb_exceptions.PageNotFound):
+            next(brewery.get_beers())
 
     def test_brewery_unicode(self):
         ''' Check unicode brewery URLs '''
