@@ -65,7 +65,6 @@ class RateBeer(object):
 
     See the full README at https://github.com/alilja/ratebeer
     """
-    VERSION = "2.2alpha"
 
     def search(self, query):
         """Returns a list of beers and breweries that matched the search query.

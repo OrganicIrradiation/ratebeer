@@ -1,17 +1,23 @@
 #!/usr/bin/env python
 
+import os
 try:
     from setuptools import setup
 except ImportError:
     from distutils.core import setup
 
-from ratebeer import RateBeer
+def readfile(*paths):
+    """Build a file path from *paths* and return the contents."""
+    with open(os.path.join(*paths), 'r') as f:
+        return f.read()
+
+exec(readfile('ratebeer/_version.py'))
 
 setup(
     name="ratebeer",
-    version=RateBeer.VERSION,
+    version=__version__,
     description="Python API for RateBeer.com",
-    long_description=RateBeer.__doc__,
+    long_description=readfile('README.rst'),
     keywords="ratebeer rate beer ratings",
     author="Andrew Lilja",
     author_email="andrewlilja@gmail.com",

@@ -218,7 +218,7 @@ Because `ratebeer.py` does not use an API, since one is not provided, no key is 
 
 Note that the nature of web scraping means this might break at **any** time.
 
-### v2.2alpha
+### v2.2.1
 
   * ``Beer`` and ``Brewery`` objects are now "lazy", meaning they will not fetch the RateBeer page unless the requested attributes are not available. This should help minimize unnecessary requests.
   * ``RateBeer.search()`` now returns two lists of ``Beer`` and ``Brewery`` objects.
