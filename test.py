@@ -24,6 +24,24 @@ class TestBeer(unittest.TestCase):
         rb = RateBeer()
         self.assertRaises(rb_exceptions.PageNotFound, rb.beer, "/beer/asdfasdf")
 
+    def test_beer_closed_brewery(self):
+        ''' Handling beers from closed brewers '''
+        results = RateBeer().beer('/beer/hantens-hildener-landbrau/140207/')
+        superset = results
+        subset = {'brewery': '1. Hildener Landbierbrauerei',
+                  'brewery_url': '/brewers/1-hildener-landbierbrauerei/12618/'}
+        self.assertTrue(all(item in superset.items() for item in subset.items()))
+
+    def test_beer_contract_brewed(self):
+        ''' Handling contract brewed beers '''
+        results = RateBeer().beer('/beer/benediktiner-weissbier/157144/')
+        superset = results
+        subset = {'brewed_at': 'Licher Privatbrauerei (Bitburger)',
+                  'brewed_at_url': '/brewers/licher-privatbrauerei-bitburger/1677/',
+                  'brewery': 'Klosterbrauerei Ettal',
+                  'brewery_url': '/brewers/klosterbrauerei-ettal/1943/'}
+        self.assertTrue(all(item in superset.items() for item in subset.items()))
+
     def test_beer_get_reviews(self):
         ''' Check to make multi-page review searches work properly '''
         reviews = RateBeer().get_beer("/beer/deschutes-inversion-ipa/55610/").get_reviews()

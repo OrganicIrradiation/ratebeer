@@ -29,7 +29,7 @@ from datetime import datetime
 try:
     import rb_exceptions
     import soup as soup_helper
-except ImportError: # No implicit package imports in py3.
+except ImportError:  # No implicit package imports in py3.
     from ratebeer import rb_exceptions
     from ratebeer import soup as soup_helper
 
@@ -78,7 +78,7 @@ class Beer(object):
         elif not self._has_fetched:
             self._populate()
             return getattr(self, item)
-        raise AttributeError('\'%s\' has no attribute \'%s\'' % (type(self), item))
+        raise AttributeError('{0} has no attribute {1}'.format(type(self), item))
 
     def __setattr__(self, name, value):
         """Set the `name` attribute to `value."""
@@ -157,10 +157,11 @@ class Beer(object):
 
         # get basic brewery information
         brewery_info = info[1].find('div').contents
-        brewery = brewery_info[0].findAll('a')[0]
+        brewery_urls = brewery_info[0].findAll('a')
+        brewery = brewery_urls[0]
         brewed_at = None
-        if 'brewed at' in brewery_info[0].text.lower():
-            brewed_at = brewery_info[0].findAll('a')[0]
+        if len(brewery_urls) == 2:
+            brewed_at = brewery_urls[1]
         if brewery:
             self.brewery = brewery.text.strip()
             self.brewery_url = brewery.get('href')
@@ -203,7 +204,7 @@ class Beer(object):
         )
         if 'no commercial description' not in description.text.lower():
             # strip ads
-            _ = [s.extract() for s in description('small')]
+            [s.extract() for s in description('small')]
             self.description = ' '.join([s for s in description.strings]).strip()
 
         # get name
@@ -319,7 +320,7 @@ class Brewery(object):
         elif not self._has_fetched:
             self._populate()
             return getattr(self, item)
-        raise AttributeError('\'%s\' has no attribute \'%s\'' % (type(self), item))
+        raise AttributeError('{0} has no attribute {1}'.format(type(self), item))
 
     def __setattr__(self, name, value):
         """Set the `name` attribute to `value."""
@@ -360,6 +361,9 @@ class Brewery(object):
 
         self.name = soup.h1.text
         self.type = re.findall(r'Type: (.*?)<br\/>', soup.decode_contents())[0].strip()
+        if soup.find_all(string='Web: '):
+            self.web = soup.find_all(string='Web: ')[0].find_next()['href']
+        self.telephone = Brewery._find_span(s_contents[0], 'telephone')
         self.street = Brewery._find_span(s_contents[0], 'streetAddress')
         self.city = Brewery._find_span(s_contents[0], 'addressLocality')
         self.state = Brewery._find_span(s_contents[0], 'addressRegion')
@@ -395,6 +399,23 @@ class Brewery(object):
                 if not row.find(class_='rate'):
                     continue
                 beer = Beer(url)
+                beer.name = row.a.text.strip()
+                # Add attributes from row
+                abv = row.findAll('td')[2].text
+                weighted_avg = row.findAll('td')[3].text.strip()
+                overall_rating = row.findAll('td')[4].text.strip()
+                style_rating = row.findAll('td')[5].text.strip()
+                num_ratings = row.findAll('td')[6].text.strip()
+                if abv:
+                    beer.abv = float(abv)
+                if weighted_avg:
+                    beer.weighted_avg = float(weighted_avg)
+                if overall_rating:
+                    beer.overall_rating = int(overall_rating)
+                if style_rating:
+                    beer.style_rating = int(style_rating)
+                if num_ratings:
+                    beer.num_ratings = int(num_ratings)
                 yield beer
 
             page_number += 1

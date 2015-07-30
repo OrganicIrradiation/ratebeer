@@ -30,7 +30,7 @@ from bs4 import BeautifulSoup
 try:
     import models
     import soup as soup_helper
-except ImportError as e: # No implicit package imports in py3.
+except ImportError as e:  # No implicit package imports in py3.
     from ratebeer import models
     from ratebeer import soup as soup_helper
 
@@ -81,7 +81,7 @@ class RateBeer(object):
 
         try:
             query = unicode(query, 'UTF8').encode('iso-8859-1')
-        except (TypeError, NameError): # Python 3 does not have unicode()
+        except (TypeError, NameError):  # Python 3 does not have unicode()
             query = query.encode('iso-8859-1')
 
         request = requests.post(
