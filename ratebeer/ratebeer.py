@@ -98,12 +98,12 @@ class RateBeer(object):
                 if row.find(title='Rate This Beer'):
                     beer = models.Beer(row('td')[0].a.get('href'))
                     beer.name = row('td')[0].a.string.strip()
-                    overall_score = row('td')[3].string
-                    ratings = row('td')[4].string
+                    overall_rating = row('td')[3].string
+                    num_ratings = row('td')[4].string
                     if overall_score:
-                        beer.overall_score = int(overall_score.strip())
-                    if ratings:
-                        beer.ratings = int(ratings.strip())
+                        beer.overall_rating = int(overall_rating.strip())
+                    if num_ratings:
+                        beer.num_ratings = int(num_ratings.strip())
                     output['beers'].append(beer)
 
         brewer_table = soup.find('h2', string='brewers')
