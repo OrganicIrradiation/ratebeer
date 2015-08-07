@@ -88,38 +88,31 @@ class RateBeer(object):
             data={"BeerName": query}
         )
         soup = BeautifulSoup(request.text, "lxml")
-        soup_results = soup.find_all('table', {'class': 'results'})
         output = {"breweries": [], "beers": []}
 
         # Locate rows that contain the brewery and beer info
-        for index, val in enumerate(soup.find_all("h1")):
-            if "brewers" in val:
-                # find brewery information
-                soup_breweries = soup_results[index - 1].find_all('tr')
-                for row in soup_breweries:
-                    dataout = models.Brewery(row.a.get('href'))
-                    dataout.name = row.a.text
-                    dataout.location = row.find('td', {'align': 'right'})
-                    output['breweries'].append(dataout)
+        beer_table = soup.find('h2', string='beers')
+        if beer_table:
+            for row in beer_table.next_sibling('tr'):
+                # Only include ratable beers
+                if row.find(title='Rate This Beer'):
+                    beer = models.Beer(row('td')[0].a.get('href'))
+                    beer.name = row('td')[0].a.string.strip()
+                    overall_score = row('td')[3].string
+                    ratings = row('td')[4].string
+                    if overall_score:
+                        beer.overall_score = int(overall_score.strip())
+                    if ratings:
+                        beer.ratings = int(ratings.strip())
+                    output['beers'].append(beer)
 
-            elif "beers" in val:
-                # find beer information
-                if not soup.find_all(text="0 beers"):
-                    soup_beer_rows = iter(soup_results[index - 1].find_all('tr'))
-                    next(soup_beer_rows)
-                    for row in soup_beer_rows:
-                        link = row.find('td', 'results').a
-                        dataout = models.Beer(link.get('href'))
-                        dataout.name = link.text
-
-                        row_data = row.findAll('td')
-                        overall_rating = row_data[3].text.strip()
-                        num_ratings = row_data[4].text.strip()
-                        if len(overall_rating) > 0:
-                            dataout.overall_rating = int(overall_rating)
-                        if len(num_ratings) > 0:
-                            dataout.num_ratings = int(num_ratings)
-                        output['beers'].append(dataout)
+        brewer_table = soup.find('h2', string='brewers')
+        if brewer_table:
+            for row in brewer_table.next_sibling('tr'):
+                brewer = models.Brewery(row.a.get('href'))
+                brewer.name = row.a.string
+                brewer.location = row('td')[1].string.strip()
+                output['breweries'].append(brewer)
         return output
 
     def get_beer(self, url, fetch=None):
