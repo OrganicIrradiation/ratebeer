@@ -398,6 +398,8 @@ class Brewery(object):
                 # Only return rows that are ratable
                 if not row.find(class_='rate'):
                     continue
+                # Remove any whitespace characters. Rare, but possible.
+                url = re.sub(r"\s+", "", url, flags=re.UNICODE)
                 beer = Beer(url)
                 beer.name = row.a.text.strip()
                 # Add attributes from row

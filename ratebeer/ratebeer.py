@@ -96,11 +96,13 @@ class RateBeer(object):
             for row in beer_table.next_sibling('tr'):
                 # Only include ratable beers
                 if row.find(title='Rate This Beer'):
-                    beer = models.Beer(row('td')[0].a.get('href'))
+                    url = row('td')[0].a.get('href')
+                    url = re.sub(r"\s+", "", url, flags=re.UNICODE)
+                    beer = models.Beer(url)
                     beer.name = row('td')[0].a.string.strip()
                     overall_rating = row('td')[3].string
                     num_ratings = row('td')[4].string
-                    if overall_score:
+                    if overall_rating:
                         beer.overall_rating = int(overall_rating.strip())
                     if num_ratings:
                         beer.num_ratings = int(num_ratings.strip())
@@ -109,7 +111,9 @@ class RateBeer(object):
         brewer_table = soup.find('h2', string='brewers')
         if brewer_table:
             for row in brewer_table.next_sibling('tr'):
-                brewer = models.Brewery(row.a.get('href'))
+                url = row.a.get('href')
+                url = re.sub(r"\s+", "", url, flags=re.UNICODE)
+                brewer = models.Brewery(url)
                 brewer.name = row.a.string
                 brewer.location = row('td')[1].string.strip()
                 output['breweries'].append(brewer)

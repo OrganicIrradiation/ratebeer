@@ -104,6 +104,18 @@ class TestBrewery(unittest.TestCase):
         self.assertTrue(all(item in superset.items() for item in subset.items()))
 
 
+class TestMisc(unittest.TestCase):
+    def test_whitespace_in_url(self):
+        ''' The rare situation where a URL might have whitespace '''
+        results = RateBeer().search("13 Virtues Cleanliness Helles")
+        beer = results['beers'][0]
+        superset = beer.__dict__
+        subset = {'_has_fetched': False,
+                  'url': u'/beer/13-virtues-cleanliness-helles/231944/',
+                  'name': u'13 Virtues Cleanliness Helles'}
+        self.assertTrue(all(item in superset.items() for item in subset.items()))
+
+
 class TestSearch(unittest.TestCase):
     def test_str_ascii_search(self):
         ''' Test out the search function with an ASCII only str search '''
