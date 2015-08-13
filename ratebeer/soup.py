@@ -29,7 +29,7 @@ from bs4 import BeautifulSoup
 
 try:
     import rb_exceptions
-except ImportError: # No implicit package imports in py3.
+except ImportError:  # No implicit package imports in py3.
     from ratebeer import rb_exceptions
 
 _BASE_URL = "http://www.ratebeer.com"
