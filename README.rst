@@ -272,6 +272,11 @@ Changes
 Note that the nature of web scraping means this might break at **any**
 time.
 
+v2.3
+~~~~
+
+- Fixes to work with the new RateBeer search page.
+
 v2.2.1
 ~~~~~~
 
