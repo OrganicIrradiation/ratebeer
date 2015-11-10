@@ -41,25 +41,26 @@ class Beer(object):
         url (string): the URL of the beer you're looking for.
 
     Returns:
-        abv (float): percentage alcohol*
-        brewery (string): the name of the beer's brewery
-        brewery_url (string): that brewery's url
-        calories (float): estimated calories for the beer*
+        abv (float): percentage alcohol
+        brewery (Brewery object): the beer's brewery
+        brewed_at (Brewery object): actual brewery if contract brewed
+        calories (float): estimated calories for the beer
         description (string): the beer's description
-        mean_rating (float): the mean rating for the beer (out of 5)*
+        img_url (string): a url to an image of the beer
+        mean_rating (float): the mean rating for the beer (out of 5)
         name (string): the full name of the beer (may include the brewery name)
         num_ratings (int): the number of reviews*
         overall_rating (int): the overall rating (out of 100)
-        seasonal (string): which season the beer is produced in. Acts as a catch-all for
-            any kind of miscellanious brew information.*
+        seasonal (string): Summer, Winter, Autumn, Spring, Series, Special, None
         style (string): beer style
+        style_url (string): beer style URL
         style_rating (int): rating of the beer within its style (out of 100)
+        tags (list of strings): tags given to the beer
         url (string): the beer's url
         weighted_avg (float): the beer rating average, weighted using some unknown
-            algorithm (out of 5)*
+            algorithm (out of 5)
 
-        * may not be available for all beers
-
+        Any attributes not available will be returned as None
 
     """
     def __init__(self, url, fetch=None):
@@ -119,84 +120,63 @@ class Beer(object):
         if "Also known as " in soup_rows[1].find_all('td')[1].div.div.contents:
             raise rb_exceptions.AliasedBeer(self.url, soup_rows[1].find_all('td')[1].div.div.a['href'])
 
-        # get beer meta information
-        # grab the html and split it into a keyword and value
-        brew_info_html = soup_rows[1].find_all('td')[1].div.small
-        brew_info = [s.split(': ') for s in brew_info_html.text.split(u'\xa0\xa0')]
-        keyword_lookup = {
-            "RATINGS": "num_ratings",
-            "MEAN": "mean_rating",
-            "WEIGHTED AVG": "weighted_avg",
-            "SEASONAL": "seasonal",
-            "CALORIES": "calories",
-            "EST. CALORIES": "calories",
-            "ABV": "abv",
-            "IBU": "ibu",
-        }
-        # match the data pulled from the brew info and match it to they keyword
-        # in the lookup table
-        for meta_name, meta_data in brew_info:
-            match = keyword_lookup.get(meta_name.strip())
-            if match == "mean":
-                meta_data = meta_data[:meta_data.find("/")]
-            elif match == "abv":
-                meta_data = meta_data[:-1]
-            elif not match:
-                continue
-            # convert to float if possible
-            try:
-                if match == "num_ratings":
-                    meta_data = int(meta_data)
-                else:
-                    meta_data = float(meta_data)
-            except ValueError:
-                pass
-            setattr(self, match, meta_data)
-
-        info = soup_rows[1].tr.find_all('td')
-
-        # get basic brewery information
-        brewery_info = info[1].find('div').contents
-        brewery_urls = brewery_info[0].findAll('a')
-        brewery = brewery_urls[0]
-        brewed_at = None
-        if len(brewery_urls) == 2:
-            brewed_at = brewery_urls[1]
-        if brewery:
-            self.brewery = brewery.text.strip()
-            self.brewery_url = brewery.get('href')
-        if brewed_at:
-            self.brewed_at = brewed_at.text.strip()
-            self.brewed_at_url = brewed_at.get('href')
-
-        # get ratings
-        ratings = info[0].findAll('div')
-        if len(ratings) > 1:
-            overall_rating = ratings[1].findAll('span')
-            style_rating = ratings[3].findAll('span')
+        # General information from the top of the page
+        self.name = soup.find(itemprop='name').text.strip()
+        breweries = soup.find_all('a', href=re.compile('brewers'))
+        self.brewery = Brewery(breweries[1].get('href'))
+        self.brewery.name = breweries[1].text
+        if len(breweries) == 3:
+            self.brewed_at = Brewery(breweries[2].get('href'))
+            self.brewed_at.name = breweries[2].text
         else:
-            overall_rating = None
-            style_rating = None
-        if overall_rating and overall_rating[1].text != 'n/a':
-            self.overall_rating = int(overall_rating[1].text)
-        if style_rating and style_rating[0].text != 'n/a':
-            self.style_rating = int(style_rating[0].text)
-
-        # get the beer style
-        if brewery_info[3]:
-            self.style = brewery_info[3].text.strip()
-
-        # get the beer country
-        if ',' in brewery_info[5]:
-            # Non-USA addresses
-            self.brewery_country = brewery_info[5].split(',')[1].strip()
-        else:
-            # USA addresses
-            self.brewery_country = brewery_info[8].strip()
-
-        # get the beer description
-        description = soup_rows[1].find_all('td')[1].find(
-            'div',
+            self.brewed_at = None
+        try:
+            self.overall_rating = int(soup.find('span', text='overall').next_sibling.next_sibling)
+        except ValueError: # 'n/a'
+            self.overall_rating = None
+        except AttributeError:
+            self.overall_rating = None
+        try:
+            self.style_rating = int(soup.find('span', text='style').previous_sibling.previous_sibling)
+        except ValueError: # 'n/a'
+            self.style_rating = None
+        except AttributeError:
+            self.style_rating = None
+        self.style = soup.find(text='Style: ').next_sibling.text
+        self.style_url = soup.find(text='Style: ').next_sibling.get('href')
+        self.img_url = soup.find(id="beerImg").get('src')
+        # Data from the info bar
+        self.num_ratings = int(soup.find('span', itemprop="reviewCount").text)
+        try:
+            self.mean_rating = float(soup.find(text='MEAN: ').next_sibling.text.split('/')[0])
+        except ValueError: # Empty mean rating: '/5.0'
+            self.mean_rating = None
+        except AttributeError: # No mean rating
+            self.mean_rating = None
+        try:
+            self.weighted_avg = float(soup.find('span', itemprop="ratingValue").text)
+        except ValueError: # Empty weighted average rating: '/5'
+            self.weighted_avg = None
+        except AttributeError: # No weighted average rating
+            self.weighted_avg = None
+        try:
+            self.seasonal = soup.find(text=u'\xa0\xa0 SEASONAL: ').next_sibling.text
+        except AttributeError:
+            self.seasonal = None
+        try:
+            self.ibu = int(soup.find(title="International Bittering Units - Normally from hops").next_sibling.next_sibling.text)
+        except AttributeError:
+            self.ibu = None
+        try:
+            self.calories = int(soup.find(title="Estimated calories for a 12 fluid ounce serving").next_sibling.next_sibling.text)
+        except AttributeError:
+            self.calories = None
+        try:
+            self.abv = float(soup.find(title="Alcohol By Volume").next_sibling.next_sibling.text[:-1])
+        except ValueError: # Empty ABV: '-'
+            self.abv = None
+        # Description
+        description = soup.find('div',
             style=(
                 'border: 1px solid #e0e0e0; background: #fff; '
                 'padding: 14px; color: #777;'
@@ -206,9 +186,8 @@ class Beer(object):
             # strip ads
             [s.extract() for s in description('small')]
             self.description = ' '.join([s for s in description.strings]).strip()
+        self.tags = [t.text[1:] for t in soup.find_all('span', class_="tagLink")]
 
-        # get name
-        self.name = soup_rows[0].find_all('td')[1].h1.text.strip()
         self._has_fetched = True
 
         return self
@@ -269,6 +248,7 @@ class Review(object):
         overall (int): overall rating (out of 20, for some reason)
         palate (int): palate rating (out of 5)
         rating (float): another overall rating provided in the review. Not sure how this different from overall.
+        taste (int): taste rating (out of 10)
         text (string): actual text of the review.
         user_location (string): writer's location
         user_name (string): writer's username
