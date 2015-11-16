@@ -44,22 +44,35 @@ class RateBeer(object):
         >>> import ratebeer
         >>> rb = ratebeer.RateBeer()
         >>> results = rb.search("summit extra pale ale")
-            {'beers': [Beer('/beer/summit-extra-pale-ale/7344/'),
-                       Beer('/beer/summit-extra-pale-ale--rose-petals/317841/')],
+            {'beers': [<Beer('/beer/summit-extra-pale-ale/7344/')>,
+                       <Beer('/beer/summit-extra-pale-ale--rose-petals/317841/')>],
              'breweries': []}
+        >>> results['beers'][0]._populate()
         >>> results['beers'][0].__dict__
             {'_has_fetched': True,
              'abv': 5.1,
-             'brewery': 'Summit Brewing Company',
-             'brewery_country': 'USA',
-             'brewery_url': '/brewers/summit-brewing-company/1233/',
-             'calories': 153.0,
-             'description': 'Summit Extra Pale Ale is not a beer brewed only for beer snobs. Just the opposite. It\x92s a beer for everyone to enjoy: construction workers, stock brokers, farmers, sales people, clerks, teachers, lawyers, doctors, even other brewers. Its light bronze color and distinctly hoppy flavor have made it a favorite in St. Paul, Minneapolis and the rest of the Upper Midwest ever since we first brewed it back in 1986.',
+             'brewed_at': None,
+             'brewery': <Brewery('/brewers/summit-brewing-company/1233/')>,
+             'calories': 153,
+             'description': 'Summit Extra Pale Ale is not a beer brewed only for beer '
+                            'snobs. Just the opposite. It\x92s a beer for everyone to '
+                            'enjoy: construction workers, stock brokers, farmers, sales '
+                            'people, clerks, teachers, lawyers, doctors, even other '
+                            'brewers. Its light bronze color and distinctly hoppy flavor '
+                            'have made it a favorite in St. Paul, Minneapolis and the '
+                            'rest of the Upper Midwest ever since we first brewed it '
+                            'back in 1986.',
+             'ibu': None,
+             'img_url': 'http://res.cloudinary.com/ratebeer/image/upload/w_120,c_limit,q_85,d_no%20image.jpg/beer_7344.jpg',
+             'mean_rating': None,
              'name': 'Summit Extra Pale Ale',
-             'num_ratings': 698,
-             'overall_rating': 68,
+             'num_ratings': 701,
+             'overall_rating': 67,
+             'seasonal': None,
              'style': 'American Pale Ale',
-             'style_rating': 59,
+             'style_rating': 58,
+             'style_url': '/beerstyles/american-pale-ale/18/',
+             'tags': ['fuggles', 'cascade', 'canned', 'extra pale ale', 'horizon'],
              'url': '/beer/summit-extra-pale-ale/7344/',
              'weighted_avg': 3.27}
 

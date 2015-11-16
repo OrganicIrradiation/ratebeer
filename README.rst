@@ -19,8 +19,8 @@ way:
     {'beers': [<Beer('/beer/21st-amendment-summit-ipa/61118/')>,
                <Beer('/beer/4ts-summit-hoppy/258783/')>,
                ...
-               <Beer('/beer/lander-summit-ipa/148623/')>,
-               <Beer('/beer/le-cheval-blanc-summit-ipa/125100/')>],
+               <Beer('/beer/karben4--summit-maccc-daddy-hophead-red-ale/264171/')>,
+               <Beer('/beer/keroche-summit-lager/146462/')>],
      'breweries': [<Brewery('/brewers/sound-to-summit-brewing/22497/')>,
                    <Brewery('/brewers/summit-brewing-company/1233/')>,
                    ...
@@ -87,18 +87,26 @@ no key is required. Simply:
     >>> rb.beer("/beer/new-belgium-tour-de-fall/279122/")
     {'_has_fetched': True,
      'abv': 6.0,
-     'brewery': 'New Belgium Brewing Company',
-     'brewery_country': 'USA',
-     'brewery_url': '/brewers/new-belgium-brewing-company/77/',
-     'calories': 180.0,
-     'description': 'New Belgium\x92s love for beer, bikes and benefits is best described by being at Tour de Fat. Our love for Cascade and Amarillo hops is best tasted in our Tour de Fall Pale Ale. We\x92re cruising both across the country during our favorite time of year. Hop on and find Tour de Fall Pale Ale in fall 2014.',
-     'ibu': 38.0,
+     'brewed_at': None,
+     'brewery': <Brewery('/brewers/new-belgium-brewing-company/77/')>,
+     'calories': 180,
+     'description': 'New Belgium\x92s love for beer, bikes and benefits is best '
+                    'described by being at Tour de Fat. Our love for Cascade and '
+                    'Amarillo hops is best tasted in our Tour de Fall Pale Ale. '
+                    'We\x92re cruising both across the country during our '
+                    'favorite time of year. Hop on and find Tour de Fall Pale '
+                    'Ale in fall 2014.',
+     'ibu': 38,
+     'img_url': 'http://res.cloudinary.com/ratebeer/image/upload/w_120,c_limit,q_85,d_no%20image.jpg/beer_279122.jpg',
+     'mean_rating': None,
      'name': 'New Belgium Tour de Fall',
      'num_ratings': 257,
      'overall_rating': 77,
      'seasonal': 'Autumn',
      'style': 'American Pale Ale',
      'style_rating': 75,
+     'style_url': '/beerstyles/american-pale-ale/18/',
+     'tags': ['cascade', 'amarillo'],
      'url': '/beer/new-belgium-tour-de-fall/279122/',
      'weighted_avg': 3.34}
 
@@ -124,8 +132,10 @@ no key is required. Simply:
      'postal_code': '97702',
      'state': 'Oregon',
      'street': '901 SW Simpson Ave',
+     'telephone': '(541) 385-8606',
      'type': 'Microbrewery',
-     'url': '/brewers/deschutes-brewery/233/'}
+     'url': '/brewers/deschutes-brewery/233/',
+     'web': 'http://www.deschutesbrewery.com/'}
 
 -  ``search`` -- A generic search. A dictionary with two keys: beers and
    breweries. Each of those contains a list of objects, beers and
@@ -142,16 +152,28 @@ no key is required. Simply:
     >>> results['beers'][0].__dict__
     {'_has_fetched': True,
      'abv': 5.1,
-     'brewery': 'Summit Brewing Company',
-     'brewery_country': 'USA',
-     'brewery_url': '/brewers/summit-brewing-company/1233/',
-     'calories': 153.0,
-     'description': 'Summit Extra Pale Ale is not a beer brewed only for beer snobs. Just the opposite. It\x92s a beer for everyone to enjoy: construction workers, stock brokers, farmers, sales people, clerks, teachers, lawyers, doctors, even other brewers. Its light bronze color and distinctly hoppy flavor have made it a favorite in St. Paul, Minneapolis and the rest of the Upper Midwest ever since we first brewed it back in 1986.',
+     'brewed_at': None,
+     'brewery': <Brewery('/brewers/summit-brewing-company/1233/')>,
+     'calories': 153,
+     'description': 'Summit Extra Pale Ale is not a beer brewed only for beer '
+                    'snobs. Just the opposite. It\x92s a beer for everyone to '
+                    'enjoy: construction workers, stock brokers, farmers, sales '
+                    'people, clerks, teachers, lawyers, doctors, even other '
+                    'brewers. Its light bronze color and distinctly hoppy flavor '
+                    'have made it a favorite in St. Paul, Minneapolis and the '
+                    'rest of the Upper Midwest ever since we first brewed it '
+                    'back in 1986.',
+     'ibu': None,
+     'img_url': 'http://res.cloudinary.com/ratebeer/image/upload/w_120,c_limit,q_85,d_no%20image.jpg/beer_7344.jpg',
+     'mean_rating': None,
      'name': 'Summit Extra Pale Ale',
-     'num_ratings': 698,
-     'overall_rating': 68,
+     'num_ratings': 701,
+     'overall_rating': 67,
+     'seasonal': None,
      'style': 'American Pale Ale',
-     'style_rating': 59,
+     'style_rating': 58,
+     'style_url': '/beerstyles/american-pale-ale/18/',
+     'tags': ['fuggles', 'cascade', 'canned', 'extra pale ale', 'horizon'],
      'url': '/beer/summit-extra-pale-ale/7344/',
      'weighted_avg': 3.27}
 
@@ -174,12 +196,12 @@ no key is required. Simply:
 
 .. code:: python
 
-    >>> [b for b in rb.beer_style("/beerstyles/abbey-dubbel/71/")]:
+    >>> [b for b in rb.beer_style("/beerstyles/abbey-dubbel/71/")]
     [<Beer('/beer/st-bernardus-prior-8/2531/')>,
      <Beer('/beer/westmalle-dubbel/2205/')>,
      ...
-     <Beer('/beer/trillium-rubbel/311473/')>,
-     <Beer('/beer/weyerbacher-althea/230962/')>]
+     <Beer('/beer/weyerbacher-althea/230962/')>,
+     <Beer('/beer/cricket-hill-small-batch-belgian-dubbel/143244/')>]
 
 ``Beer`` Class
 ~~~~~~~~~~~~~~
@@ -189,26 +211,29 @@ no key is required. Simply:
 
 **Attributes**
 
--  ``abv`` (float): percentage alcohol\*
+-  ``abv`` (float): percentage alcohol
 -  ``brewery`` (string): the name of the beer's brewery
--  ``brewery_url`` (string): that brewery's url
--  ``calories`` (float): estimated calories for the beer\*
+-  ``brewery`` (Brewery object): the beer's brewery
+-  ``brewed_at`` (Brewery object): actual brewery if contract brewed
+-  ``calories`` (float): estimated calories for the beer
 -  ``description`` (string): the beer's description
--  ``mean_rating`` (float): the mean rating for the beer (out of 5)\*
+-  ``img_url`` (string): a url to an image of the beer
+-  ``mean_rating`` (float): the mean rating for the beer (out of 5)
 -  ``name`` (string): the full name of the beer (may include the brewery
    name)
--  ``num_ratings`` (int): the number of reviews\*
+-  ``num_ratings`` (int): the number of reviews
 -  ``overall_rating`` (int): the overall rating (out of 100)
--  ``seasonal`` (string): which season the beer is produced in. Acts as
-   a catch-all for any kind of miscellanious brew information.\*
+-  ``seasonal`` (string): Summer, Winter, Autumn, Spring, Series, Special, None
 -  ``style`` (string): beer style
+-  ``style_url`` (string): beer style URL
 -  ``style_rating`` (int): rating of the beer within its style (out of
    100)
--  ``url`` (string): the beer's url
+-  ``url`` (string): the url of the beer's ratebeer page
+-  ``tags`` (list of strings): tags given to the beer
 -  ``weighted_avg`` (float): the beer rating average, weighted using
-   some unknown algorithm (out of 5)\*
+   some unknown algorithm (out of 5)
 
-\* may not be available for all beers
+Any attributes not available will be returned as None
 
 **Methods**
 
@@ -233,6 +258,7 @@ review. Probably best to not try to make one yourself: use
 -  ``palate`` (int): palate rating (out of 5)
 -  ``rating`` (float): another overall rating provided in the review.
    Not sure how this different from ``overall``.
+-  ``taste`` (int): taste rating (out of 10)
 -  ``text`` (string): actual text of the review.
 -  ``user_location`` (string): writer's location
 -  ``user_name`` (string): writer's username
@@ -248,11 +274,13 @@ review. Probably best to not try to make one yourself: use
 -  ``country`` (string): the brewery's country
 -  ``name`` (string): the brewery's name
 -  ``postal_code`` (string): the brewery's postal code
--  ``state`` (string): the brewery's state/municipality/province.
--  ``street`` (string): the street address of the brewery.
+-  ``state`` (string): the brewery's state/municipality/province
+-  ``street`` (string): the street address of the brewery
+-  ``telephone`` (string): the brewery's telephone number
 -  ``type`` (string): the type of brewery. Typically "microbrewery" or
-   "macrobrewery".
--  ``url`` (string): the url of the brewery
+   "macrobrewery"
+-  ``url`` (string): the url of the brewery's ratebeer page
+-  ``web`` (string): the url of the brewery's homepage
 
 **Methods**
 
@@ -271,6 +299,15 @@ Changes
 
 Note that the nature of web scraping means this might break at **any**
 time.
+
+v2.3.1
+~~~~
+
+- Overhauled the Beer object so that it will be a little easier to fix with
+  future changes. Beer object now also returns Brewery objects rather than
+  strings for the brewery and brewed_at attributes. Also returns the url for the
+  image of the beer and a list of user-assigned tags. The test.py file has been
+  updated to be a bit clearer about where failures occur.
 
 v2.3
 ~~~~
