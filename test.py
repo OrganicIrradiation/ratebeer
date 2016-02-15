@@ -24,7 +24,7 @@ class TestBeer(unittest.TestCase):
     def test_beer_closed_brewery(self):
         ''' Handling beers from closed brewers '''
         results = RateBeer().beer('/beer/hantens-hildener-landbrau/140207/')
-        self.assertTrue(results['brewery'].url == u'/brewers/1-hildener-landbierbrauerei/12618/')
+        self.assertTrue(results['brewery'].url == u'/brewers/hildener-landbierbrauerei/12618/')
 
     def test_beer_closed_contract_brewery(self):
         ''' Handling beers from closed contract brewers '''
