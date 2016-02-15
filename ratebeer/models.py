@@ -131,7 +131,7 @@ class Beer(object):
         else:
             self.brewed_at = None
         try:
-            self.overall_rating = int(soup.find('span', text='overall').next_sibling.next_sibling)
+            self.overall_rating = int(soup.find('span', text='overall').next_sibling.next_sibling.text)
         except ValueError: # 'n/a'
             self.overall_rating = None
         except AttributeError:
@@ -146,7 +146,7 @@ class Beer(object):
         self.style_url = soup.find(text='Style: ').next_sibling.get('href')
         self.img_url = soup.find(id="beerImg").get('src')
         # Data from the info bar
-        self.num_ratings = int(soup.find('span', itemprop="reviewCount").text)
+        self.num_ratings = int(soup.find('span', itemprop="ratingCount").text)
         try:
             self.mean_rating = float(soup.find(text='MEAN: ').next_sibling.text.split('/')[0])
         except ValueError: # Empty mean rating: '/5.0'
