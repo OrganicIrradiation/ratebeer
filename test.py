@@ -7,6 +7,14 @@ from ratebeer import rb_exceptions
 
 
 class TestBeer(unittest.TestCase):
+    def is_float(self, s):
+        ''' Checks whether a string represents a float '''
+        try:
+            float(s)
+            return True
+        except ValueError:
+            return False
+
     def test_beer(self):
         ''' Make sure the results for a beer contain the expected data '''
         results = RateBeer().beer('/beer/new-belgium-tour-de-fall/279122/')
@@ -15,6 +23,12 @@ class TestBeer(unittest.TestCase):
         self.assertTrue(results['style'] == u'American Pale Ale')
         self.assertTrue(results['ibu'] == 38)
         self.assertTrue(results['brewery'].url == u'/brewers/new-belgium-brewing-company/77/')
+        self.assertTrue(results['overall_rating'] <= 100)
+        self.assertTrue(results['style_rating'] <= 100)
+        self.assertTrue(results['num_ratings'] >= 0)
+        self.assertTrue(self.is_float(results['weighted_avg']))
+        self.assertTrue(results['weighted_avg'] <= 5.0)
+
 
     def test_beer_404(self):
         ''' Checks to make sure that we appropriately raise a page not found '''
