@@ -155,5 +155,15 @@ class TestSearch(unittest.TestCase):
         self.assertTrue(beer.name == u'To Øl Jule Mælk')
 
 
+class TestAlpha(unittest.TestCase):
+    def test_fetch_by_letter(self):
+        ''' Make sure the results for a brewery list by index contain the expected data '''
+        results = RateBeer().brewers_by_alpha("A")
+        self.assertIsNotNone(results, [])
+        beer = results[0]
+        self.assertTrue(beer.url == u'/brewers/a-duus-and-co/1668/')
+        self.assertTrue(beer.name == u'A. Duus & Co.')
+
+
 if __name__ == '__main__':
     unittest.main()
