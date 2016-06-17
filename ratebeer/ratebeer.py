@@ -25,6 +25,7 @@
 
 import re
 import requests
+import string
 from bs4 import BeautifulSoup
 
 try:
@@ -33,7 +34,6 @@ try:
 except ImportError as e:  # No implicit package imports in py3.
     from ratebeer import models
     from ratebeer import soup as soup_helper
-
 
 class RateBeer(object):
     """
@@ -208,3 +208,32 @@ class RateBeer(object):
             dataout.name = link.text
             yield dataout
         raise StopIteration
+
+    def brewers_by_alpha(self, letter):
+        """Returns a list of breweries that start with the provided letter.
+
+        Args:
+            letter (string): a single letter to search.
+
+        Returns:
+            A list of breweries.
+            Each entry contains a name and a reference so you can look it up
+            with the ``brewery`` method.
+        """
+
+        if letter not in string.ascii_uppercase and letter != '0-9':
+            raise ValueError("Please only provide a single letter.")
+
+        request = requests.post(
+            soup_helper._BASE_URL + "/browsebrewers-" + letter + ".htm"
+        )
+        soup = BeautifulSoup(request.text, "lxml")
+        breweries = []
+
+        for entry in soup.select('a[href*=/brewers/]'):
+            url = entry.get('href')
+            brewer = models.Brewery(url)
+
+            breweries.append(brewer)
+
+        return breweries
