@@ -364,40 +364,34 @@ class Brewery(object):
         if not self._has_fetched:
             self._populate()
 
-        page_number = 1
-        while True:
-            complete_url = u'{0}0/{1}/'.format(self.url, page_number)
-            soup = soup_helper._get_soup(complete_url)
-            soup_beer_rows = soup.find('table', 'maintable nohover').findAll('tr')
+        _id = self.url.split('/')[-2]
+        complete_url = u'/Ratings/Beer/ShowBrewerBeers.asp?BrewerID={0}'.format(_id)
+        soup = soup_helper._get_soup(complete_url)
+        soup_beer_rows = soup.find('table', id='brewer-beer-table').findAll('tr')
 
-            if len(soup_beer_rows) < 2:
-                raise StopIteration
-
-            for row in soup_beer_rows[1:]:
-                url = row.a.get('href')
-                # Only return rows that are ratable
-                if not row.find(class_='rate'):
-                    continue
-                # Remove any whitespace characters. Rare, but possible.
-                url = re.sub(r"\s+", "", url, flags=re.UNICODE)
-                beer = Beer(url)
-                beer.name = row.a.text.strip()
-                # Add attributes from row
-                abv = row.findAll('td')[2].text
-                weighted_avg = row.findAll('td')[3].text.strip()
-                overall_rating = row.findAll('td')[4].text.strip()
-                style_rating = row.findAll('td')[5].text.strip()
-                num_ratings = row.findAll('td')[6].text.strip()
-                if abv:
-                    beer.abv = float(abv)
-                if weighted_avg:
-                    beer.weighted_avg = float(weighted_avg)
-                if overall_rating:
-                    beer.overall_rating = int(overall_rating)
-                if style_rating:
-                    beer.style_rating = int(style_rating)
-                if num_ratings:
-                    beer.num_ratings = int(num_ratings)
-                yield beer
-
-            page_number += 1
+        for row in soup_beer_rows[1:]:
+            url = row.a.get('href')
+            # Only return rows that are ratable
+            if not row.find('a',title="Rate this beer"):
+                continue
+            # Remove any whitespace characters. Rare, but possible.
+            url = re.sub(r"\s+", "", url, flags=re.UNICODE)
+            beer = Beer(url)
+            beer.name = row.a.text.strip()
+            # Add attributes from row
+            abv = row.findAll('td')[1].text
+            weighted_avg = row.findAll('td')[4].text.strip()
+            overall_rating = row.findAll('td')[5].text.strip()
+            style_rating = row.findAll('td')[6].text.strip()
+            num_ratings = row.findAll('td')[7].text.strip()
+            if abv:
+                beer.abv = float(abv)
+            if weighted_avg:
+                beer.weighted_avg = float(weighted_avg)
+            if overall_rating:
+                beer.overall_rating = int(overall_rating)
+            if style_rating:
+                beer.style_rating = int(style_rating)
+            if num_ratings:
+                beer.num_ratings = int(num_ratings)
+            yield beer
