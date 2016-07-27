@@ -334,15 +334,15 @@ class Brewery(object):
             A dictionary of attributes about that brewery."""
 
         soup = soup_helper._get_soup(self.url)
-        try:
-            s_contents = soup.find('div', id='container').find('table').find_all('tr')[0].find_all('td')
-        except AttributeError:
+        s_contents = soup.find_all('div', {'itemtype':'http://schema.org/LocalBusiness'})
+        if not s_contents:
             raise rb_exceptions.PageNotFound(self.url)
 
         self.name = soup.h1.text
-        self.type = re.findall(r'Type: (.*?)<br\/>', soup.decode_contents())[0].strip()
-        if soup.find_all(string='Web: '):
-            self.web = soup.find_all(string='Web: ')[0].find_next()['href']
+        self.type = s_contents[0].find_all('div')[1].text.strip()
+        website = s_contents[0].find_all('div',{'class':'media-links'})[0].find_all('a')[0]
+        if website:
+            self.web = website['href']
         self.telephone = Brewery._find_span(s_contents[0], 'telephone')
         self.street = Brewery._find_span(s_contents[0], 'streetAddress')
         self.city = Brewery._find_span(s_contents[0], 'addressLocality')
