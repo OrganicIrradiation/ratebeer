@@ -128,7 +128,7 @@ class RateBeer(object):
                 url = re.sub(r"\s+", "", url, flags=re.UNICODE)
                 brewer = models.Brewery(url)
                 brewer.name = row.a.string
-                brewer.location = row('td')[1].string.strip()
+                brewer.location = row('td')[1].text.strip()
                 output['breweries'].append(brewer)
         return output
 
