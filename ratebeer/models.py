@@ -381,15 +381,12 @@ class Brewery(object):
             # Add attributes from row
             abv = row.findAll('td')[1].text
             weighted_avg = row.findAll('td')[4].text.strip()
-            overall_rating = row.findAll('td')[5].text.strip()
-            style_rating = row.findAll('td')[6].text.strip()
-            num_ratings = row.findAll('td')[7].text.strip()
+            style_rating = row.findAll('td')[5].text.strip()
+            num_ratings = row.findAll('td')[6].text.strip()
             if abv:
                 beer.abv = float(abv)
             if weighted_avg:
                 beer.weighted_avg = float(weighted_avg)
-            if overall_rating:
-                beer.overall_rating = int(overall_rating)
             if style_rating:
                 beer.style_rating = int(style_rating)
             if num_ratings:
