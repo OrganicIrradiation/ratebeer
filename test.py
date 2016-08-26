@@ -28,6 +28,7 @@ class TestBeer(unittest.TestCase):
         self.assertTrue(results['num_ratings'] >= 0)
         self.assertTrue(self.is_float(results['weighted_avg']))
         self.assertTrue(results['weighted_avg'] <= 5.0)
+        self.assertTrue(results['retired'] == False)
 
 
     def test_beer_404(self):
@@ -70,6 +71,11 @@ class TestBeer(unittest.TestCase):
         self.assertTrue(results['name'] == u'Steðji Októberbjór')
         self.assertTrue(results['brewery'].name == u'Brugghús Steðja')
         self.assertTrue(results['brewery'].url == u'/brewers/brugghus-steoja/15310/')
+
+    def test_beer_retired_beer(self):
+        ''' Attributes for retired beers display properly '''
+        results = RateBeer().beer('/beer/shorts-funkin-punkin/79468/')
+        self.assertTrue(results['retired'] == True)
 
 
 class TestBrewery(unittest.TestCase):

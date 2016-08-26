@@ -175,6 +175,10 @@ class Beer(object):
             self.abv = float(soup.find(title="Alcohol By Volume").next_sibling.next_sibling.text[:-1])
         except ValueError: # Empty ABV: '-'
             self.abv = None
+        if soup.find(title="Currently out of production"):
+            self.retired = True
+        else:
+            self.retired = False
         # Description
         description = soup.find('div',
             style=(
