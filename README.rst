@@ -102,6 +102,7 @@ no key is required. Simply:
      'name': 'New Belgium Tour de Fall',
      'num_ratings': 257,
      'overall_rating': 77,
+     'retired': False,
      'seasonal': 'Autumn',
      'style': 'American Pale Ale',
      'style_rating': 75,
@@ -169,6 +170,7 @@ no key is required. Simply:
      'name': 'Summit Extra Pale Ale',
      'num_ratings': 701,
      'overall_rating': 67,
+     'retired': False,
      'seasonal': None,
      'style': 'American Pale Ale',
      'style_rating': 58,
@@ -223,6 +225,7 @@ no key is required. Simply:
    name)
 -  ``num_ratings`` (int): the number of reviews
 -  ``overall_rating`` (int): the overall rating (out of 100)
+-  ``retired`` (boolean): True if the beer is retired, otherwise False
 -  ``seasonal`` (string): Summer, Winter, Autumn, Spring, Series, Special, None
 -  ``style`` (string): beer style
 -  ``style_url`` (string): beer style URL

@@ -68,6 +68,7 @@ class RateBeer(object):
              'name': 'Summit Extra Pale Ale',
              'num_ratings': 701,
              'overall_rating': 67,
+             'retired': False,
              'seasonal': None,
              'style': 'American Pale Ale',
              'style_rating': 58,
