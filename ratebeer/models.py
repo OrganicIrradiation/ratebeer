@@ -105,8 +105,9 @@ class Beer(object):
     def _populate(self):
         soup = soup_helper._get_soup(self.url)
         # check for 404s
+        container = soup.find('div', id='container')
         try:
-            soup_rows = soup.find('div', id='container').find('table').find_all('tr')
+            container.find('div')
         except AttributeError:
             raise rb_exceptions.PageNotFound(self.url)
         # ratebeer pages don't actually 404, they just send you to this weird
@@ -114,11 +115,11 @@ class Beer(object):
         # seems like it's all getting done server side -- so we have to look
         # for the contents h1 to see if we're looking at the beer reference or
         # not
-        if "beer reference" in soup_rows[0].find_all('td')[1].h1.contents:
+        if "beer reference" in container.find('div').find('h1').text.strip():
             raise rb_exceptions.PageNotFound(self.url)
 
-        if "Also known as " in soup_rows[1].find_all('td')[1].div.div.contents:
-            raise rb_exceptions.AliasedBeer(self.url, soup_rows[1].find_all('td')[1].div.div.a['href'])
+        if "Also known as " in container.find('div',class_="columns-container").text:
+            raise rb_exceptions.AliasedBeer(self.url, container.find('div',class_="columns-container").find('a',href=re.compile('^/beer')).get('href'))
 
         # General information from the top of the page
         self.name = soup.find(itemprop='name').text.strip()
@@ -180,13 +181,8 @@ class Beer(object):
         else:
             self.retired = False
         # Description
-        description = soup.find('div',
-            style=(
-                'border: 1px solid #e0e0e0; background: #fff; '
-                'padding: 14px; color: #777;'
-            )
-        )
-        if 'no commercial description' not in description.text.lower():
+        description = soup.find('span',itemprop="description")
+        if hasattr(description,'text'):
             # strip ads
             [s.extract() for s in description('small')]
             self.description = ' '.join([s for s in description.strings]).strip()
