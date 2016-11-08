@@ -78,6 +78,11 @@ class TestBeer(unittest.TestCase):
         results = RateBeer().beer('/beer/shorts-funkin-punkin/79468/')
         self.assertTrue(results['retired'] == True)
 
+    def test_beer_aliased(self):
+        ''' Check that AliasedBeer exception is raised properly'''
+        rb = RateBeer()
+        self.assertRaises(rb_exceptions.AliasedBeer, rb.beer, "/beer/new-belgium-biere-de-mars/113241/")
+
 
 class TestBrewery(unittest.TestCase):
     def test_brewery(self):
