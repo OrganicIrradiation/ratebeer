@@ -226,7 +226,7 @@ class Beer(object):
         while True:
             complete_url = u'{0}{1}/{2}/'.format(self.url, url_flag, page_number)
             soup = soup_helper._get_soup(complete_url)
-            content = soup.find('table', style='padding: 10px;').tr.td
+            content = soup.find('div', class_='reviews-container')
             reviews = content.find_all('div', style='padding: 0px 0px 0px 0px;')
             if len(reviews) < 1:
                 raise StopIteration
