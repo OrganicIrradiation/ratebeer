@@ -183,9 +183,10 @@ class Beer(object):
         # Description
         description = soup.find('span',itemprop="description")
         if hasattr(description,'text'):
-            # strip ads
+            # strip ads and replace non-ASCII apostrophe with ASCII apostrophe
             [s.extract() for s in description('small')]
             self.description = ' '.join([s for s in description.strings]).strip()
+            self.description = re.sub(r'\x92','\'',self.description)
         self.tags = [t.text[1:] for t in soup.find_all('span', class_="tagLink")]
 
         self._has_fetched = True
