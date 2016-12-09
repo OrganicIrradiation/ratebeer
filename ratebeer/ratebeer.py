@@ -97,9 +97,9 @@ class RateBeer(object):
         except (TypeError, NameError):  # Python 3 does not have unicode()
             query = query.encode('iso-8859-1')
 
-        request = requests.post(
-            soup_helper._BASE_URL + "/findbeer.asp",
-            data={"BeerName": query}
+        request = requests.get(
+            soup_helper._BASE_URL + "/findbeer.asp"
+           ,params={"BeerName": query}
         )
         soup = BeautifulSoup(request.text, "lxml")
         output = {"breweries": [], "beers": []}
