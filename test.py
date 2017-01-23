@@ -29,6 +29,7 @@ class TestBeer(unittest.TestCase):
         self.assertTrue(self.is_float(results['weighted_avg']))
         self.assertTrue(results['weighted_avg'] <= 5.0)
         self.assertTrue(results['retired'] == False)
+        self.assertTrue(results['description'] == u'New Belgium\'s love for beer, bikes and benefits is best described by being at Tour de Fat. Our love for Cascade and Amarillo hops is best tasted in our Tour de Fall Pale Ale. We\'re cruising both across the country during our favorite time of year. Hop on and find Tour de Fall Pale Ale in fall 2014.')
 
 
     def test_beer_404(self):
@@ -76,6 +77,11 @@ class TestBeer(unittest.TestCase):
         ''' Attributes for retired beers display properly '''
         results = RateBeer().beer('/beer/shorts-funkin-punkin/79468/')
         self.assertTrue(results['retired'] == True)
+
+    def test_beer_aliased(self):
+        ''' Check that AliasedBeer exception is raised properly'''
+        rb = RateBeer()
+        self.assertRaises(rb_exceptions.AliasedBeer, rb.beer, "/beer/new-belgium-biere-de-mars/113241/")
 
 
 class TestBrewery(unittest.TestCase):
