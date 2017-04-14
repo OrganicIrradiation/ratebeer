@@ -120,6 +120,12 @@ class TestBrewery(unittest.TestCase):
 
 
 class TestMisc(unittest.TestCase):
+    def test_beer_styles(self):
+        ''' Make sure the results for a brewery list by index contain the expected data '''
+        results = RateBeer().beer_style_list()
+        self.assertIsNotNone(results, [])
+        self.assertTrue(results['Abbey Dubbel'] == '/top/abbey-dubbel')
+
     def test_whitespace_in_url(self):
         ''' The rare situation where a URL might have whitespace '''
         results = RateBeer().search("13 Virtues Cleanliness Helles")
@@ -173,8 +179,8 @@ class TestAlpha(unittest.TestCase):
         results = RateBeer().brewers_by_alpha("A")
         self.assertIsNotNone(results, [])
         beer = results[0]
-        self.assertTrue(beer.url == u'/brewers/a-duus-and-co/1668/')
-        self.assertTrue(beer.name == u'A. Duus & Co.')
+        self.assertTrue(beer.url == u'/brewers/a-frame-brewing/29590/')
+        self.assertTrue(beer.name == u'A-Frame Brewing')
 
 
 if __name__ == '__main__':

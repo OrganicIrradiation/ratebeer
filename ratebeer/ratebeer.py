@@ -160,13 +160,9 @@ class RateBeer(object):
             A dictionary, with beer styles for keys and urls for values.
         """
         styles = {}
-
         soup = soup_helper._get_soup("/beerstyles/")
-        columns = soup.find_all('table')[2].find_all('td')
-        for column in columns:
-            lines = [li for li in column.find_all('li')]
-            for line in lines:
-                styles[line.text] = line.a.get('href')
+        for item in soup.find_all('a', href=re.compile('/top/')):
+            styles[item.text] = item.get('href')
         return styles
 
     def beer_style(self, url, sort_type="overall"):
