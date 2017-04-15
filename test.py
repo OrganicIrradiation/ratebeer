@@ -25,12 +25,12 @@ class TestBeer(unittest.TestCase):
         self.assertTrue(results['brewery'].url == u'/brewers/new-belgium-brewing-company/77/')
         self.assertTrue(results['overall_rating'] <= 100)
         self.assertTrue(results['style_rating'] <= 100)
-        self.assertTrue(results['num_ratings'] >= 0)
+        self.assertTrue(results['num_ratings'] > 0)
+        self.assertTrue(results['mean_rating'] is None)
         self.assertTrue(self.is_float(results['weighted_avg']))
         self.assertTrue(results['weighted_avg'] <= 5.0)
         self.assertTrue(results['retired'] == False)
         self.assertTrue(results['description'] == u'New Belgium\'s love for beer, bikes and benefits is best described by being at Tour de Fat. Our love for Cascade and Amarillo hops is best tasted in our Tour de Fall Pale Ale. We\'re cruising both across the country during our favorite time of year. Hop on and find Tour de Fall Pale Ale in fall 2014.')
-
 
     def test_beer_404(self):
         ''' Checks to make sure that we appropriately raise a page not found '''
@@ -65,6 +65,33 @@ class TestBeer(unittest.TestCase):
         beer = RateBeer().get_beer('/beer/asdfasdf')
         with self.assertRaises(rb_exceptions.PageNotFound):
             next(beer.get_reviews())
+
+    def test_beer_no_abv(self):
+        results = RateBeer().beer('/beer/deschutes-altitude-amber/92102/')
+        self.assertIsNotNone(results)
+        self.assertTrue(results['name'] == u'Deschutes Altitude Amber')
+        self.assertTrue(results['style'] == u'Amber Ale')
+        self.assertTrue(results['abv'] is None)
+        self.assertTrue(results['overall_rating'] is None)
+        self.assertTrue(results['style_rating'] is None)
+        self.assertTrue(results['num_ratings'] > 0)
+        self.assertTrue(results['mean_rating'] > 0)
+        self.assertTrue(self.is_float(results['weighted_avg']))
+        self.assertTrue(results['weighted_avg'] > 0)
+        self.assertTrue(results['retired'] == False)
+
+    def test_beer_no_ratings(self):
+        results = RateBeer().beer('/beer/deschutes-abyssident/194792/')
+        self.assertIsNotNone(results)
+        self.assertTrue(results['name'] == u'Deschutes Abyssident')
+        self.assertTrue(results['style'] == u'Sour/Wild Ale')
+        self.assertTrue(results['abv'] == 11)
+        self.assertTrue(results['overall_rating'] is None)
+        self.assertTrue(results['style_rating'] is None)
+        self.assertTrue(results['num_ratings'] == 0)
+        self.assertTrue(results['mean_rating'] is None)
+        self.assertTrue(results['weighted_avg'] is None)
+        self.assertTrue(results['retired'] == False)
 
     def test_beer_unicode(self):
         results = RateBeer().beer('/beer/steoji-oktoberbjor/292390/')
@@ -101,8 +128,8 @@ class TestBrewery(unittest.TestCase):
     def test_brewery_get_beers(self):
         ''' Check to make multi-page review searches work properly '''
         beers = RateBeer().get_brewery("/brewers/deschutes-brewery/233/").get_beers()
-        for i in range(3):
-            self.assertIsNotNone(next(beers))
+        for beer in beers:
+            self.assertIsNotNone(beer)
 
     def test_brewery_get_beers_404(self):
         ''' Check lazy get_beer 404 exception '''

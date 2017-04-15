@@ -155,7 +155,7 @@ class Beer(object):
         except AttributeError: # No mean rating
             self.mean_rating = None
         try:
-            self.weighted_avg = float(soup.find(attrs={"name": "real average"}).find('span', itemprop="ratingValue").text)
+            self.weighted_avg = float(soup.find(text='WEIGHTED AVG: ').next_sibling.text.split('/')[0])
         except ValueError: # Empty weighted average rating: '/5'
             self.weighted_avg = None
         except AttributeError: # No weighted average rating
