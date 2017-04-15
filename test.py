@@ -121,10 +121,17 @@ class TestBrewery(unittest.TestCase):
 
 class TestMisc(unittest.TestCase):
     def test_beer_styles(self):
-        ''' Make sure the results for a brewery list by index contain the expected data '''
+        ''' Make sure the results for a brewery list contain the expected data '''
         results = RateBeer().beer_style_list()
         self.assertIsNotNone(results, [])
-        self.assertTrue(results['Abbey Dubbel'] == '/top/abbey-dubbel')
+        gen = RateBeer().beer_style(results['Abt/Quadrupel'], sort_type='score', sort_order='descending')
+        beers = [b for b in gen]
+        self.assertIsNotNone(beers)
+        self.assertTrue(beers[0].name == u'Westvleteren 12 (XII)')
+        gen = RateBeer().beer_style(results['Low Alcohol'], sort_type='score', sort_order='ascending')
+        beers = [b for b in gen]
+        self.assertIsNotNone(beers)
+        self.assertTrue(beers[0].name == u'Busch NA')
 
     def test_whitespace_in_url(self):
         ''' The rare situation where a URL might have whitespace '''

@@ -157,54 +157,47 @@ class RateBeer(object):
         """Returns the beer styles from the beer styles page.
 
         Returns:
-            A dictionary, with beer styles for keys and urls for values.
+            A dictionary, with beer styles strings for keys and integer ids
+            for values.
         """
         styles = {}
-        soup = soup_helper._get_soup("/beerstyles/")
-        for item in soup.find_all('a', href=re.compile('/top/')):
-            styles[item.text] = item.get('href')
+        soup = soup_helper._get_soup("/top/")
+        for item in [i for i in soup.find('select', id="StyleMenu").find_all('option') if i.get('name')]:
+            styles[item.text.strip()] = int(item.get('value'))
         return styles
 
-    def beer_style(self, url, sort_type="overall"):
+    def beer_style(self, ident, sort_type=None, sort_order=None):
         """Get all the beers from a specific beer style page.
 
         Args:
-            url (string): The specific url of the beer style. Looks like:
-                "/beerstyles/abbey-dubbel/71/"
-            sort_type (string): The sorting of the results. "overall" returns
-                the highest- rated beers, while "trending" returns the newest
-                and trending ones.
+            ident (integer): The ID of the beer style from beer_style_list().
+                For example, for 'Abbey Dubbel' it would be 71.
+            sort_type (string): The sorting of the results. The valid choices
+                are "score" (default), "count", and "abv".
+            sort_order (string): "ascending" (low-to-high) or
+                "descending" (high-to-low, default)
 
         Returns:
             A list of generator of beers.
         """
+        if sort_type is None:
+            sort_type = 'score'
+        if sort_order is None:
+            sort_order = 'descending'
         sort_type = sort_type.lower()
-        url_codes = {"overall": 0, "trending": 1}
-        sort_flag = url_codes.get(sort_type)
-        if sort_flag is None:
-            raise ValueError("Invalid ``sort_type``.")
-        style_id = re.search(r"/(?P<id>\d*)/", url).group('id')
+        sort_order = sort_order.lower()
+        so = {'score': 0, 'count': 1, 'abv': 2}.get(sort_type)
+        o = {'descending': 0, 'ascending': 1}.get(sort_order)
 
-        req = requests.post(
-            soup_helper._BASE_URL +
-            (
-                "/ajax/top-beer-by-style.asp?style={0}&sort={1}"
-                "&order=0&min=10&max=9999&retired=0&new=0&mine=0&"
-            )
-            .format(style_id, sort_flag),
-            allow_redirects=True
-        )
-        soup = BeautifulSoup(req.text, "lxml")
+        soup = soup_helper._get_soup('/ajax/top-beer.asp?s={}&so={}&o={}'.format(ident, so, o))
         rows = iter(soup.table.find_all('tr'))
-        next(rows)
-
+        next(rows)  # Get rid of the header
         for row in rows:
             data = row.find_all('td')
             link = data[1].a
             dataout = models.Beer(link.get('href'))
             dataout.name = link.text
             yield dataout
-        raise StopIteration
 
     def brewers_by_alpha(self, letter):
         """Returns a list of breweries that start with the provided letter.
