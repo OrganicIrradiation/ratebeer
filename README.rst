@@ -17,12 +17,12 @@ way:
     >>> rb = ratebeer.RateBeer()
     >>> rb.search('Summit')
     {'beers': [<Beer('/beer/21st-amendment-summit-ipa/61118/')>,
-               <Beer('/beer/4ts-summit-hoppy/258783/')>,
+               <Beer('/beer/3-daughters-summitennial-double-ipa/427367/')>,
                ...
-               <Beer('/beer/karben4--summit-maccc-daddy-hophead-red-ale/264171/')>,
-               <Beer('/beer/keroche-summit-lager/146462/')>],
-     'breweries': [<Brewery('/brewers/sound-to-summit-brewing/22497/')>,
-                   <Brewery('/brewers/summit-brewing-company/1233/')>,
+               <Beer('/beer/elland-summit-for-the-weekend/197690/')>,
+               <Beer('/beer/elland-summit-from-another-galaxy/197112/')>],
+     'breweries': [<Brewery('/brewers/summit-cider/22197/')>,
+                   <Brewery('/brewers/summit-city-brewerks/18972/')>,
                    ...
                    <Brewery('/brewers/summit-hard-cider-and-perry/18260/')>,
                    <Brewery('/brewers/summit-station-restaurant-brewery/346/')>]}
@@ -90,22 +90,22 @@ no key is required. Simply:
      'brewed_at': None,
      'brewery': <Brewery('/brewers/new-belgium-brewing-company/77/')>,
      'calories': 180,
-     'description': 'New Belgium\x92s love for beer, bikes and benefits is best '
+     'description': "New Belgium's love for beer, bikes and benefits is best "
                     'described by being at Tour de Fat. Our love for Cascade and '
                     'Amarillo hops is best tasted in our Tour de Fall Pale Ale. '
-                    'We\x92re cruising both across the country during our '
-                    'favorite time of year. Hop on and find Tour de Fall Pale '
-                    'Ale in fall 2014.',
+                    "We're cruising both across the country during our favorite "
+                    'time of year. Hop on and find Tour de Fall Pale Ale in fall '
+                    '2014.',
      'ibu': 38,
-     'img_url': 'http://res.cloudinary.com/ratebeer/image/upload/w_120,c_limit,q_85,d_no%20image.jpg/beer_279122.jpg',
+     'img_url': 'https://res.cloudinary.com/ratebeer/image/upload/w_120,c_limit/beer_279122.jpg',
      'mean_rating': None,
      'name': 'New Belgium Tour de Fall',
-     'num_ratings': 257,
-     'overall_rating': 77,
+     'num_ratings': 261,
+     'overall_rating': 72,
      'retired': False,
      'seasonal': 'Autumn',
      'style': 'American Pale Ale',
-     'style_rating': 75,
+     'style_rating': 70,
      'style_url': '/beerstyles/american-pale-ale/18/',
      'tags': ['cascade', 'amarillo'],
      'url': '/beer/new-belgium-tour-de-fall/279122/',
@@ -136,7 +136,7 @@ no key is required. Simply:
      'telephone': '(541) 385-8606',
      'type': 'Microbrewery',
      'url': '/brewers/deschutes-brewery/233/',
-     'web': 'http://www.deschutesbrewery.com/'}
+     'web': 'https://www.facebook.com/deschutes.brewery'}
 
 -  ``search`` -- A generic search. A dictionary with two keys: beers and
    breweries. Each of those contains a list of objects, beers and
@@ -151,59 +151,38 @@ no key is required. Simply:
                <Beer('/beer/summit-extra-pale-ale--rose-petals/317841/')>],
      'breweries': []}
     >>> results['beers'][0].__dict__
-    {'_has_fetched': True,
-     'abv': 5.1,
-     'brewed_at': None,
-     'brewery': <Brewery('/brewers/summit-brewing-company/1233/')>,
-     'calories': 153,
-     'description': 'Summit Extra Pale Ale is not a beer brewed only for beer '
-                    'snobs. Just the opposite. It\x92s a beer for everyone to '
-                    'enjoy: construction workers, stock brokers, farmers, sales '
-                    'people, clerks, teachers, lawyers, doctors, even other '
-                    'brewers. Its light bronze color and distinctly hoppy flavor '
-                    'have made it a favorite in St. Paul, Minneapolis and the '
-                    'rest of the Upper Midwest ever since we first brewed it '
-                    'back in 1986.',
-     'ibu': None,
-     'img_url': 'http://res.cloudinary.com/ratebeer/image/upload/w_120,c_limit,q_85,d_no%20image.jpg/beer_7344.jpg',
-     'mean_rating': None,
+    {'_has_fetched': False,
      'name': 'Summit Extra Pale Ale',
-     'num_ratings': 701,
-     'overall_rating': 67,
-     'retired': False,
-     'seasonal': None,
-     'style': 'American Pale Ale',
-     'style_rating': 58,
-     'style_url': '/beerstyles/american-pale-ale/18/',
-     'tags': ['fuggles', 'cascade', 'canned', 'extra pale ale', 'horizon'],
-     'url': '/beer/summit-extra-pale-ale/7344/',
-     'weighted_avg': 3.27}
+     'num_ratings': 721,
+     'overall_rating': 60,
+     'url': '/beer/summit-extra-pale-ale/7344/'}
 
 -  ``beer_style_list`` -- Returns a dictionary containing the beer style
-   name and a link to that page.
+   name and the style id.
 
 .. code:: python
 
     >>> rb.beer_style_list()
-    {'Abbey Dubbel': '/beerstyles/abbey-dubbel/71/',
-     'Abbey Tripel': '/beerstyles/abbey-tripel/72/',
+    {'Abbey Dubbel': 71,
+     'Abbey Tripel': 72,
      ...
-     'Witbier': '/beerstyles/witbier/48/',
-     'Zwickel/Keller/Landbier': '/beerstyles/zwickel-keller-landbier/74/'}
+     'Witbier': 48,
+     'Zwickel/Keller/Landbier': 74}
 
 -  ``beer_style`` -- Returns a generator of ``Beer`` objects from the
-   beer style page. Takes a ``url`` to a beer style and an optional
-   ``sort_type``: ``overall`` returns the highest-rated beers (default
-   behavior) and ``trending`` returns, well, the trending beers.
+   beer style page. Takes a ``ident`` for a beer style (see output of
+   ``beer_style_list())`` and optional ``sort_type`` ("score" (default),
+   "count", or "abv") and ``sort_order`` ("ascending" (low-to-high) or
+   "descending" (high-to-low, default)).
 
 .. code:: python
 
-    >>> [b for b in rb.beer_style("/beerstyles/abbey-dubbel/71/")]
+    >>> [b for b in rb.beer_style(71)]
     [<Beer('/beer/st-bernardus-prior-8/2531/')>,
      <Beer('/beer/westmalle-dubbel/2205/')>,
      ...
-     <Beer('/beer/weyerbacher-althea/230962/')>,
-     <Beer('/beer/cricket-hill-small-batch-belgian-dubbel/143244/')>]
+     <Beer('/beer/belgh-brasse-mons-abbey-dubbel/187593/')>,
+     <Beer('/beer/new-glarus-thumbprint-series-dubbel/254781/')>]
 
 ``Beer`` Class
 ~~~~~~~~~~~~~~
