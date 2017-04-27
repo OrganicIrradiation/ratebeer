@@ -132,13 +132,13 @@ class Beer(object):
         else:
             self.brewed_at = None
         try:
-            self.overall_rating = int(soup.find('span', text='overall').next_sibling.next_sibling.text)
+            self.overall_rating = int(soup.find(class_='ratingValue').text)
         except ValueError: # 'n/a'
             self.overall_rating = None
         except AttributeError:
             self.overall_rating = None
         try:
-            self.style_rating = int(soup.find('span', text='style').previous_sibling.previous_sibling)
+            self.style_rating = int(soup.find(class_="style-text").previous_sibling.previous_sibling)
         except ValueError: # 'n/a'
             self.style_rating = None
         except AttributeError:
@@ -155,7 +155,7 @@ class Beer(object):
         except AttributeError: # No mean rating
             self.mean_rating = None
         try:
-            self.weighted_avg = float(soup.find(attrs={"name": "real average"}).find('span', itemprop="ratingValue").text)
+            self.weighted_avg = float(soup.find(text='WEIGHTED AVG: ').next_sibling.text.split('/')[0])
         except ValueError: # Empty weighted average rating: '/5'
             self.weighted_avg = None
         except AttributeError: # No weighted average rating
@@ -187,7 +187,7 @@ class Beer(object):
             [s.extract() for s in description('small')]
             self.description = ' '.join([s for s in description.strings]).strip()
             self.description = re.sub(r'\x92','\'',self.description)
-        self.tags = [t.text[1:] for t in soup.find_all('span', class_="tagLink")]
+        self.tags = [t.text[1:] for t in soup.find_all(class_='tags')]
 
         self._has_fetched = True
 
