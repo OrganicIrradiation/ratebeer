@@ -233,14 +233,10 @@ review. Probably best to not try to make one yourself: use
 
 **Attributes**
 
--  ``appearance`` (int): rating for appearance (out of 5)
--  ``aroma`` (int): aroma rating (out of 10)
+*Aroma, appearance, taste, palate, overall were removed sometime during a June 2017 UI update*
+
 -  ``date`` (datetime): review date
--  ``overall`` (int): overall rating (out of 20, for some reason)
--  ``palate`` (int): palate rating (out of 5)
--  ``rating`` (float): another overall rating provided in the review.
-   Not sure how this different from ``overall``.
--  ``taste`` (int): taste rating (out of 10)
+-  ``rating`` (float): overall rating provided in the review.
 -  ``text`` (string): actual text of the review.
 -  ``user_location`` (string): writer's location
 -  ``user_name`` (string): writer's username
@@ -383,8 +379,8 @@ License
 **Creator**: Andrew Lilja
 
 **Contributors**: \* Vincent Castellano
-(@`Surye <https://github.com/Surye>`__) - Python 2 and 3 compatability
-\* Steven A. Cholewiak - General bug squishing
+(`Surye <https://github.com/Surye>`__) - Python 2 and 3 compatability
+\* Steven A. Cholewiak - General bug squishing \* `parryc <https://github.com/parryc>`__ - Scraping updates and general bug squishing
 
 All code released under `the Unlicense <http://unlicense.org/>`__
 (a.k.a. Public Domain).
