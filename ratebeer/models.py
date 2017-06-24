@@ -257,16 +257,6 @@ class Review(object):
 
     def __init__(self, review_soup):
         # get ratings
-        # gets every second entry in a list
-        raw_ratings = zip(*[iter(review_soup.find('strong').find_all(["big", "small"]))] * 2)
-        # strip html and everything else
-        for (label, rating) in raw_ratings:
-            rating_int = int(rating.text[:rating.text.find("/")])
-            setattr(
-                self,
-                label.text.lower().strip(),
-                rating_int
-            )
         self.rating = float(review_soup.find_all('div')[1].text)
 
         # get user information
