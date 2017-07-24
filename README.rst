@@ -233,10 +233,14 @@ review. Probably best to not try to make one yourself: use
 
 **Attributes**
 
-*Aroma, appearance, taste, palate, overall were removed sometime during a June 2017 UI update*
-
+-  ``appearance`` (int): rating for appearance (out of 5)
+-  ``aroma`` (int): aroma rating (out of 10)
 -  ``date`` (datetime): review date
--  ``rating`` (float): overall rating provided in the review.
+-  ``overall`` (int): overall rating (out of 20, for some reason)
+-  ``palate`` (int): palate rating (out of 5)
+-  ``rating`` (float): another overall rating provided in the review.
+   Not sure how this different from ``overall``.
+-  ``taste`` (int): taste rating (out of 10)
 -  ``text`` (string): actual text of the review.
 -  ``user_location`` (string): writer's location
 -  ``user_name`` (string): writer's username
@@ -271,6 +275,8 @@ Tests
 -----
 
 ``ratebeer`` uses the standard Python unit testing library.
+
+This can be run via `python test.py`.
 
 Changes
 -------
