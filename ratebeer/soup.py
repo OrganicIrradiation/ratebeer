@@ -39,6 +39,8 @@ def _get_soup(url):
     if _BASE_URL in url:
         url.replace(_BASE_URL, '')
     req = requests.get(_BASE_URL + url, allow_redirects=True)
+    if '<meta http-equiv="Content-Type" content="text/html;" charset="utf-8">' in req.text:
+        req.encoding = 'utf-8'
     if "ratebeer robot oops" in req.text.lower():
         raise rb_exceptions.PageNotFound(url)
     return BeautifulSoup(req.text, "lxml")
