@@ -276,6 +276,8 @@ Tests
 
 ``ratebeer`` uses the standard Python unit testing library.
 
+This can be run via `python test.py`.
+
 Changes
 -------
 
@@ -383,8 +385,8 @@ License
 **Creator**: Andrew Lilja
 
 **Contributors**: \* Vincent Castellano
-(@`Surye <https://github.com/Surye>`__) - Python 2 and 3 compatability
-\* Steven A. Cholewiak - General bug squishing
+(`Surye <https://github.com/Surye>`__) - Python 2 and 3 compatability
+\* Steven A. Cholewiak - General bug squishing \* `parryc <https://github.com/parryc>`__ - Scraping updates and general bug squishing
 
 All code released under `the Unlicense <http://unlicense.org/>`__
 (a.k.a. Public Domain).

@@ -256,17 +256,21 @@ class Review(object):
     """
 
     def __init__(self, review_soup):
-        # get ratings
         # gets every second entry in a list
-        raw_ratings = zip(*[iter(review_soup.find('strong').find_all(["big", "small"]))] * 2)
+        review_title_attr = review_soup.find_all('div')[1].get('title')
+        raw_ratings = re.search(r'<small>(.+?)</small>', review_title_attr).group(1).split('<br />')
         # strip html and everything else
-        for (label, rating) in raw_ratings:
-            rating_int = int(rating.text[:rating.text.find("/")])
-            setattr(
-                self,
-                label.text.lower().strip(),
-                rating_int
-            )
+        for rating_text in raw_ratings:
+            parts = rating_text.split(' ')
+            # only set a rating if all of the information exists
+            if rating_text:
+                label = parts[0]
+                rating_int = int(parts[1][:parts[1].find("/")])
+                setattr(
+                    self,
+                    label.lower().strip(),
+                    rating_int
+                )
         self.rating = float(review_soup.find_all('div')[1].text)
 
         # get user information
@@ -384,7 +388,7 @@ class Brewery(object):
             weighted_avg = row.findAll('td')[4].text.strip()
             style_rating = row.findAll('td')[5].text.strip()
             num_ratings = row.findAll('td')[6].text.strip()
-            if abv:
+            if abv and abv != '-':
                 beer.abv = float(abv)
             if weighted_avg:
                 beer.weighted_avg = float(weighted_avg)
