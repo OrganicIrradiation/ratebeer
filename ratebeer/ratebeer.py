@@ -26,6 +26,7 @@
 import re
 import requests
 import string
+import json
 from bs4 import BeautifulSoup
 
 try:
@@ -92,45 +93,36 @@ class RateBeer(object):
             beer.
         """
 
-        try:
-            query = unicode(query, 'UTF8').encode('iso-8859-1')
-        except (TypeError, NameError):  # Python 3 does not have unicode()
-            query = query.encode('iso-8859-1')
+        # try:
+        #     query = unicode(query, 'UTF8').encode('iso-8859-1')
+        # except (TypeError, NameError):  # Python 3 does not have unicode()
+        #     query = query.encode('iso-8859-1')
 
-        request = requests.get(
-            soup_helper._BASE_URL + "/findbeer.asp"
-           ,params={"BeerName": query}
+        data = {
+                 "query":"query beerSearch($query: String, $order: SearchOrder, $first: Int, $after: ID) { searchResultsArr: beerSearch(query: $query, order: $order, first: $first, after: $after) { totalCount last items { beer { id name imageUrl overallScore ratingCount __typename } review { id score __typename } __typename   }   __typename } }", 
+                 "variables": {"query":query, "order":"MATCH", "first":20},
+                 "operationName":"beerSearch"
+                }
+
+        # options = requests.options("https://beta.ratebeer.com/v1/api/graphql/")
+
+        request = requests.post(
+            "https://beta.ratebeer.com/v1/api/graphql/"
+           ,data=json.dumps(data)
+           ,headers={"content-type": "application/json"}
         )
-        soup = BeautifulSoup(request.text, "lxml")
         output = {"breweries": [], "beers": []}
 
-        # Locate rows that contain the brewery and beer info
-        beer_table = soup.find('h2', string='beers')
-        if beer_table:
-            for row in beer_table.next_sibling('tr'):
-                # Only include ratable beers
-                if row.find(title='Rate This Beer'):
-                    url = row('td')[0].a.get('href')
-                    url = re.sub(r"\s+", "", url, flags=re.UNICODE)
-                    beer = models.Beer(url)
-                    beer.name = row('td')[0].a.string.strip()
-                    overall_rating = row('td')[3].string
-                    num_ratings = row('td')[4].string
-                    if overall_rating:
-                        beer.overall_rating = int(overall_rating.strip())
-                    if num_ratings:
-                        beer.num_ratings = int(num_ratings.strip())
-                    output['beers'].append(beer)
-
-        brewer_table = soup.find('h2', string='brewers')
-        if brewer_table:
-            for row in brewer_table.next_sibling('tr'):
-                url = row.a.get('href')
-                url = re.sub(r"\s+", "", url, flags=re.UNICODE)
-                brewer = models.Brewery(url)
-                brewer.name = row.a.string
-                brewer.location = row('td')[1].text.strip()
-                output['breweries'].append(brewer)
+        for result in json.loads(request.text)['data']['searchResultsArr']['items']:
+            if 'beer' in result:
+                beer_data = result['beer']
+                # double check this...
+                url = '/beer/{0}/{1}/'.format(beer_data['name'].replace(' ', '-').lower(), beer_data['id'])
+                beer = models.Beer(url)
+                beer.name = beer_data['name']
+                beer.overall_rating = beer_data['overallScore']
+                beer.num_ratings = beer_data['ratingCount']
+            output['beers'].append(beer)
         return output
 
     def get_beer(self, url, fetch=None):

@@ -32,7 +32,7 @@ try:
 except ImportError:  # No implicit package imports in py3.
     from ratebeer import rb_exceptions
 
-_BASE_URL = "http://www.ratebeer.com"
+_BASE_URL = "https://www.ratebeer.com"
 
 
 def _get_soup(url):

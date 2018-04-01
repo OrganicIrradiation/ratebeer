@@ -94,11 +94,11 @@ class TestBeer(unittest.TestCase):
         self.assertTrue(results['retired'] == False)
 
     def test_beer_unicode(self):
-        results = RateBeer().beer('/beer/steoji-oktoberbjor/292390/')
+        results = RateBeer().beer('/beer/stedji-oktoberbjor/292390/')
         self.assertIsNotNone(results)
         self.assertTrue(results['name'] == u'Steðji Októberbjór')
         self.assertTrue(results['brewery'].name == u'Brugghús Steðja')
-        self.assertTrue(results['brewery'].url == u'/brewers/brugghs-steja/15310/')
+        self.assertTrue(results['brewery'].url == u'/brewers/brugghus-steoja/15310/')
 
     def test_beer_retired_beer(self):
         ''' Attributes for retired beers display properly '''
@@ -141,7 +141,7 @@ class TestBrewery(unittest.TestCase):
         ''' Check unicode brewery URLs '''
         results = RateBeer().brewery("/brewers/brauhaus-18•80/12750/")
         self.assertIsNotNone(results)
-        self.assertTrue(results['name'] == u'Brauhaus 18\x9580')
+        self.assertTrue(results['name'] == u'Brauhaus 18•80')
         self.assertTrue(results['type'] == u'Brew Pub')
         self.assertTrue(results['country'] == u'Germany')
 
@@ -185,7 +185,7 @@ class TestSearch(unittest.TestCase):
         self.assertListEqual(results['breweries'], [])
         self.assertIsNotNone(results['beers'])
         beer = results['beers'][0]
-        self.assertTrue(beer.url == u'/beer/to-ol-jule-maelk/235066/')
+        self.assertTrue(beer.url == u'/beer/to-øl-jule-mælk/235066/')
         self.assertTrue(beer.name == u'To Øl Jule Mælk')
 
     def test_unicode_ascii_search(self):
@@ -203,7 +203,7 @@ class TestSearch(unittest.TestCase):
         self.assertListEqual(results['breweries'], [])
         self.assertIsNotNone(results['beers'])
         beer = results['beers'][0]
-        self.assertTrue(beer.url == u'/beer/to-ol-jule-maelk/235066/')
+        self.assertTrue(beer.url == u'/beer/to-øl-jule-mælk/235066/')
         self.assertTrue(beer.name == u'To Øl Jule Mælk')
 
 
@@ -213,8 +213,8 @@ class TestAlpha(unittest.TestCase):
         results = RateBeer().brewers_by_alpha("A")
         self.assertIsNotNone(results, [])
         beer = results[0]
-        self.assertTrue(beer.url == u'/brewers/a-frame-brewing/29590/')
-        self.assertTrue(beer.name == u'A-Frame Brewing')
+        self.assertTrue(beer.url == u'/brewers/a-duus-and-co/1668/')
+        self.assertTrue(beer.name == u'A. Duus & Co.')
 
 
 if __name__ == '__main__':

@@ -258,19 +258,22 @@ class Review(object):
     def __init__(self, review_soup):
         # gets every second entry in a list
         review_title_attr = review_soup.find_all('div')[1].get('title')
-        raw_ratings = re.search(r'<small>(.+?)</small>', review_title_attr).group(1).split('<br />')
-        # strip html and everything else
-        for rating_text in raw_ratings:
-            parts = rating_text.split(' ')
-            # only set a rating if all of the information exists
-            if rating_text:
-                label = parts[0]
-                rating_int = int(parts[1][:parts[1].find("/")])
-                setattr(
-                    self,
-                    label.lower().strip(),
-                    rating_int
-                )
+
+        # some ratings may now just contain the x/5.0 rating, with no sub-ratings
+        if '<small>' in review_title_attr: 
+            raw_ratings = re.search(r'<small>(.+?)</small>', review_title_attr).group(1).split('<br />')
+            # strip html and everything else
+            for rating_text in raw_ratings:
+                parts = rating_text.split(' ')
+                # only set a rating if all of the information exists
+                if rating_text:
+                    label = parts[0]
+                    rating_int = int(parts[1][:parts[1].find("/")])
+                    setattr(
+                        self,
+                        label.lower().strip(),
+                        rating_int
+                    )
         self.rating = float(review_soup.find_all('div')[1].text)
 
         # get user information
