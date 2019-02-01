@@ -24,6 +24,8 @@
 # For more information, please refer to <http://unlicense.org/>
 
 import re
+import requests
+import json
 from datetime import datetime
 
 try:
@@ -46,6 +48,7 @@ class Beer(object):
         brewed_at (Brewery object): actual brewery if contract brewed
         calories (float): estimated calories for the beer
         description (string): the beer's description
+        id (int): id of the beer
         img_url (string): a url to an image of the beer
         mean_rating (float): the mean rating for the beer (out of 5)
         name (string): the full name of the beer (may include the brewery name)
@@ -63,9 +66,10 @@ class Beer(object):
         Any attributes not available will be returned as None
 
     """
-    def __init__(self, url, fetch=None):
+    def __init__(self, url, fetch=None, id=None):
         """Initialize with URL and do not fetch"""
         self.url = url
+        self.id = id
         if fetch is None:
             fetch = False
         if fetch:
@@ -102,92 +106,85 @@ class Beer(object):
         """Provide a nicely formatted representation"""
         return self.name
 
+    def _format(self, value):
+        """Sets what is now a blank string or int to None, otherwise returns value"""
+        if value == "" or value == 0:
+            return None
+        else:
+            return value
+
     def _populate(self):
-        soup = soup_helper._get_soup(self.url)
-        # check for 404s
-        container = soup.find('div', id='container')
+        if not self.id:
+            self.id = self.url.split('/')[-2]
+
+        data = [
+                 {"operationName":"beer",
+                  "variables":{"beerId":self.id},
+                  "query":"query beer($beerId: ID!) { \n info: beer(id: $beerId) { \n id \n name \n description \n style { \n id \n name \n glasses { \n id \n name \n __typename \n } \n __typename \n } \n styleScore \n overallScore \n averageRating \n abv \n ibu \n calories \n brewer { \n id \n name \n __typename \n } \n ratingCount \n isRetired \n isUnrateable \n seasonal \n labels \n availability { \n bottle \n tap \n distribution \n __typename \n } \n __typename \n } \n} \n"},
+                 # {"operationName":"beerReviews",
+                 #  "variables":
+                 #   {"beerId":self.id,
+                 #    "order":"RECENT",
+                 #    "first":10
+                 #   },
+                 #  "query":"query beerReviews($beerId: ID!, $authorId: ID, $order: ReviewOrder, $after: ID) { \n beerReviewsArr: beerReviews(beerId: $beerId, authorId: $authorId, order: $order, after: $after) { \n items { \n id \n comment \n score \n scores { \n appearance \n aroma \n flavor \n mouthfeel \n overall \n __typename \n } \n author { \n id \n username \n reviewCount \n __typename \n } \n checkin { \n id \n place { \n name \n city \n state { \n name \n __typename \n } \n country { \n name \n __typename \n } \n __typename \n } \n __typename \n } \n createdAt \n updatedAt \n __typename \n } \n totalCount \n last \n __typename \n } \n} \n"},
+                 {"operationName":"beerByAlias",
+                  "variables":{"aliasId":self.id},
+                  "query":"query beerByAlias($aliasId: ID!) {\n beerByAlias(aliasId: $aliasId) {\n id\n name \n overallScore \n __typename \n } \n } \n"},
+                 {"operationName":"tagDisplay",
+                  "variables":{"beerId":self.id},
+                  "query":"query tagDisplay($beerId: ID!, $first: Int) { \n tagDisplayArr: beerTags(beerId: $beerId, first: $first) { \n items { \n id \n urlName: plain \n __typename \n } \n __typename \n } \n} \n"
+                 }
+                ]
+        
+        request = requests.post(
+            "https://beta.ratebeer.com/v1/api/graphql/"
+           ,data=json.dumps(data)
+           ,headers={"content-type": "application/json"}
+        )
+
         try:
-            container.find('div')
-        except AttributeError:
-            raise rb_exceptions.PageNotFound(self.url)
-        # ratebeer pages don't actually 404, they just send you to this weird
-        # "beer reference" page but the url doesn't actually change, it just
-        # seems like it's all getting done server side -- so we have to look
-        # for the contents h1 to see if we're looking at the beer reference or
-        # not
-        if "beer reference" in container.find('div').find('h1').text.strip():
-            raise rb_exceptions.PageNotFound(self.url)
+            results = json.loads(request.text)
+        except:
+            raise rb_exceptions.JSONParseException(self.id)
 
-        if "Also known as " in container.find('div',class_="columns-container").text:
-            raise rb_exceptions.AliasedBeer(self.url, container.find('div',class_="columns-container").find('a',href=re.compile('^/beer')).get('href'))
+        beer_data = results[0]['data']['info']
 
-        # General information from the top of the page
-        self.name = soup.find(itemprop='name').text.strip()
-        breweries = soup.find_all('a', href=re.compile('brewers'))
-        self.brewery = Brewery(breweries[1].get('href'))
-        self.brewery.name = breweries[1].text
-        if len(breweries) == 3:
-            self.brewed_at = Brewery(breweries[2].get('href'))
-            self.brewed_at.name = breweries[2].text
+        if beer_data == None:
+            raise rb_exceptions.PageNotFound(self.id)
+
+        alias_data = results[1]['data']['beerByAlias']
+
+        if alias_data != None:
+            raise rb_exceptions.AliasedBeer(self.id, alias_data['id'])
+
+        tag_data = results[2]['data']['tagDisplayArr']['items']
+
+        self.name = beer_data['name']
+        self.brewery = Brewery('/brewers/{0}/{1}/'.format(re.sub('[/ ]','-',beer_data['brewer']['name'].lower()),beer_data['brewer']['id']))
+        self.brewery.name = beer_data['brewer']['name']
+        self.brewed_at = None #no longer supported
+        self.overall_rating = self._format(beer_data['overallScore'])
+        self.style_rating = self._format(beer_data['styleScore'])
+        self.style = beer_data['style']['name']
+        self.style_url = "/beerstyles/{0}/{1}/".format(re.sub('/','-',self.style.lower()), beer_data['style']['id'])
+        self.img_url = "https://res.cloudinary.com/ratebeer/image/upload/w_152,h_309,c_pad,d_beer_img_default.png,f_auto/beer_{0}".format(self.id)
+        self.num_ratings = self._format(beer_data['ratingCount'])
+        self.mean_rating = self._format(beer_data['averageRating'])
+        self.weighted_avg = None # does not appear to exist anymore
+        if(beer_data['seasonal'] != 'UNKNOWN'):
+            self.seasonal = beer_data['seasonal']
         else:
-            self.brewed_at = None
-        try:
-            self.overall_rating = int(soup.find(class_='ratingValue').text)
-        except ValueError: # 'n/a'
-            self.overall_rating = None
-        except AttributeError:
-            self.overall_rating = None
-        try:
-            self.style_rating = int(soup.find(class_="style-text").previous_sibling.previous_sibling)
-        except ValueError: # 'n/a'
-            self.style_rating = None
-        except AttributeError:
-            self.style_rating = None
-        self.style = soup.find(text='Style: ').next_sibling.text
-        self.style_url = soup.find(text='Style: ').next_sibling.get('href')
-        self.img_url = soup.find(id="beerImg").get('src')
-        # Data from the info bar
-        self.num_ratings = int(soup.find('span', itemprop="ratingCount").text)
-        try:
-            self.mean_rating = float(soup.find(text='MEAN: ').next_sibling.text.split('/')[0])
-        except ValueError: # Empty mean rating: '/5.0'
-            self.mean_rating = None
-        except AttributeError: # No mean rating
-            self.mean_rating = None
-        try:
-            self.weighted_avg = float(soup.find(text='WEIGHTED AVG: ').next_sibling.text.split('/')[0])
-        except ValueError: # Empty weighted average rating: '/5'
-            self.weighted_avg = None
-        except AttributeError: # No weighted average rating
-            self.weighted_avg = None
-        try:
-            self.seasonal = soup.find(text=u'\xa0\xa0 SEASONAL: ').next_sibling.text
-        except AttributeError:
             self.seasonal = None
-        try:
-            self.ibu = int(soup.find(title="International Bittering Units - Normally from hops").next_sibling.next_sibling.text)
-        except AttributeError:
-            self.ibu = None
-        try:
-            self.calories = int(soup.find(title="Estimated calories for a 12 fluid ounce serving").next_sibling.next_sibling.text)
-        except AttributeError:
-            self.calories = None
-        try:
-            self.abv = float(soup.find(title="Alcohol By Volume").next_sibling.next_sibling.text[:-1])
-        except ValueError: # Empty ABV: '-'
-            self.abv = None
-        if soup.find(title="Currently out of production"):
-            self.retired = True
+        self.ibu = self._format(beer_data['ibu'])
+        self.calories = self._format(beer_data['calories'])
+        self.abv = self._format(beer_data['abv'])
+        self.retired = beer_data['isRetired']
+        self.description = re.sub(r'\x92', '\'', beer_data['description'])
+        if tag_data:
+            self.tags = [t['urlName'] for t in tag_data]
         else:
-            self.retired = False
-        # Description
-        description = soup.find('span',itemprop="description")
-        if hasattr(description,'text'):
-            # strip ads and replace non-ASCII apostrophe with ASCII apostrophe
-            [s.extract() for s in description('small')]
-            self.description = ' '.join([s for s in description.strings]).strip()
-            self.description = re.sub(r'\x92','\'',self.description)
-        self.tags = [t.text[1:] for t in soup.find_all(class_='tags')]
+            self.tags = None
 
         self._has_fetched = True
 
